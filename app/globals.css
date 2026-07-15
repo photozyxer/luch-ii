@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+:root {
+  /* base */
+  --ink: #0a0b10;
+  --surface: #13151c;
+  --surface-2: #191c25;
+  --line: #23262f;
+  --fg: #f5f6fa;
+  --muted: #9aa0ae;
+  /* prism spectrum — brand «Луч» */
+  --beam: #6366f1;
+  --c-cyan: #22d3ee;
+  --c-indigo: #6366f1;
+  --c-violet: #c084fc;
+  --c-warm: #fb923c;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface-2);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-beam: var(--beam);
+  --color-cyan: var(--c-cyan);
+  --color-indigo: var(--c-indigo);
+  --color-violet: var(--c-violet);
+  --color-warm: var(--c-warm);
+  --font-display: var(--font-unbounded);
+  --font-body: var(--font-manrope);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--ink);
+  color: var(--fg);
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--c-indigo) 45%, transparent);
+  color: #fff;
+}
+
+/* --- brand utilities --- */
+
+/* spectrum gradient text — light dispersed by a prism */
+.text-spectrum {
+  background: linear-gradient(
+    100deg,
+    var(--c-cyan) 0%,
+    var(--c-indigo) 42%,
+    var(--c-violet) 74%,
+    var(--c-warm) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* frosted glass surface */
+.glass {
+  background: color-mix(in oklab, var(--surface) 65%, transparent);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid color-mix(in oklab, var(--fg) 9%, transparent);
+}
+
+.hairline {
+  border: 1px solid color-mix(in oklab, var(--fg) 8%, transparent);
+}
+
+/* indigo glow for CTAs / active elements */
+.glow-beam {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--beam) 40%, transparent),
+    0 8px 40px -8px color-mix(in oklab, var(--beam) 70%, transparent);
+}
+
+/* faint grid backdrop */
+.grid-bg {
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--fg) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--fg) 4%, transparent) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+}
+
+/* animated spectrum sweep */
+@keyframes sweep {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* live spectrum text — slow hue drift for hero accents */
+.text-spectrum-live {
+  background: linear-gradient(
+    100deg,
+    var(--c-cyan),
+    var(--c-indigo),
+    var(--c-violet),
+    var(--c-warm),
+    var(--c-violet),
+    var(--c-indigo),
+    var(--c-cyan)
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sweep 9s linear infinite;
+}
+
+/* cursor spotlight card: JS sets --mx/--my in px */
+.spot {
+  position: relative;
+}
+.spot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s;
+  background: radial-gradient(
+    360px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in oklab, var(--spot-color, var(--c-indigo)) 16%, transparent),
+    transparent 65%
+  );
+}
+.spot:hover::before {
+  opacity: 1;
+}
+
+/* film grain to kill flat-gradient banding */
+.noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* endless logo/tag strip */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 36s linear infinite;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+/* section kicker */
+.kicker {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* big outline number for case/service ordering */
+.num-ghost {
+  font-family: var(--font-unbounded), sans-serif;
+  font-weight: 700;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in oklab, var(--fg) 18%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
