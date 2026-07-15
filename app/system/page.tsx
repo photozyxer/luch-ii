@@ -22,6 +22,7 @@ type Agent = {
   output: string;
   safety: string;
   live?: boolean;
+  demo?: string;
 };
 
 const agents: Agent[] = [
@@ -136,6 +137,7 @@ const agents: Agent[] = [
     color: "var(--c-indigo)",
     tag: "Консультант ЖК",
     name: "Агент-консультант",
+    demo: "/consultant",
     pitch:
       "Первый контакт с покупателем — в любое время суток. Обучается на данных конкретного ЖК и отвечает как лучший менеджер проекта, а не как «универсальный чат-бот».",
     does: [
@@ -284,13 +286,23 @@ export default function SystemPage() {
                           </li>
                         ))}
                       </ul>
-                      <Link
-                        href={`/contacts?topic=module&module=${a.id}`}
-                        className="mt-6 inline-block text-sm font-semibold text-fg transition-colors hover:opacity-80"
-                        style={{ color: a.color }}
-                      >
-                        Подключить этот модуль →
-                      </Link>
+                      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+                        {a.demo && (
+                          <Link
+                            href={a.demo}
+                            className="glow-beam rounded-xl bg-beam px-4 py-2.5 text-sm font-semibold text-white"
+                          >
+                            Живое демо →
+                          </Link>
+                        )}
+                        <Link
+                          href={`/contacts?topic=module&module=${a.id}`}
+                          className="inline-block text-sm font-semibold text-fg transition-colors hover:opacity-80"
+                          style={{ color: a.color }}
+                        >
+                          Подключить этот модуль →
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>
