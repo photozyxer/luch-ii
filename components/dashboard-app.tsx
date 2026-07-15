@@ -360,7 +360,7 @@ const TABS: TabCfg[] = [
     recos: [
       { id: "irina", s: "bad", symptom: "Менеджер Ирина: 0/3 встреч, ипотека не предложена в 3/3 звонках", action: "персональный разбор + скрипт ипотеки, таймкоды приложены" },
       { id: "vk", s: "warn", symptom: "Цена КЦО +12%, VK перегрет и тянет стоимость вверх", action: "переложить 15% бюджета VK → Директ, черновик сплита готов" },
-      { id: "prit", s: "warn", symptom: "ЖК «Притяжение»: CR вал→КЦО 21% — product gap по нижним этажам", action: "вынести на продуктовый разбор, звонки-примеры собраны" },
+      { id: "prit", s: "warn", symptom: "ЖК «Орбита»: CR вал→КЦО 21% — product gap по нижним этажам", action: "вынести на продуктовый разбор, звонки-примеры собраны" },
     ],
   },
   {
@@ -443,12 +443,12 @@ const PERIODS = [
 ];
 const OBJECTS = [
   { id: "all", label: "Портфель · 6 ЖК", mult: 1 },
-  { id: "pro", label: "НИКС Про", mult: 0.18 },
-  { id: "city", label: "НИКС Сити", mult: 0.12 },
-  { id: "bluher", label: "Лайн Блюхера", mult: 0.28 },
-  { id: "yar", label: "Лайн Ярославской", mult: 0.16 },
-  { id: "tank", label: "Лайн Танкистов", mult: 0.13 },
-  { id: "prit", label: "Притяжение", mult: 0.15 },
+  { id: "pro", label: "Уральский квартал", mult: 0.18 },
+  { id: "city", label: "Городской", mult: 0.12 },
+  { id: "bluher", label: "Высота Восточная", mult: 0.28 },
+  { id: "yar", label: "Высота Северная", mult: 0.16 },
+  { id: "tank", label: "Высота Западная", mult: 0.13 },
+  { id: "prit", label: "Орбита", mult: 0.15 },
 ];
 const SOURCES = [
   { id: "all", label: "Все источники", mult: 1 },
