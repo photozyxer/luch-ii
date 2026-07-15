@@ -69,20 +69,32 @@ export default function LeadForm({
       {topic && <input type="hidden" name="topic" value={topic} />}
       {module && <input type="hidden" name="module" value={module} />}
 
+      {/* honeypot: скрыт от людей, боты заполняют — сервер такие заявки молча отбрасывает */}
+      <input
+        type="text"
+        name="company"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="sr-only"
+      />
+
       <input
         name="phone"
         required
         type="tel"
+        maxLength={40}
         placeholder="Телефон*"
         className={field}
       />
       <div className="grid gap-4 sm:grid-cols-2">
-        <input name="name" placeholder="Имя" className={field} />
-        <input name="email" type="email" placeholder="Email" className={field} />
+        <input name="name" maxLength={120} placeholder="Имя" className={field} />
+        <input name="email" type="email" maxLength={120} placeholder="Email" className={field} />
       </div>
       <textarea
         name="task"
         rows={4}
+        maxLength={1500}
         placeholder="Опишите задачу или проблему — или вставьте ссылку на записи звонков"
         className={field}
       />

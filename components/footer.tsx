@@ -3,6 +3,7 @@ import Link from "next/link";
 const nav = [
   { href: "/agency", label: "Услуги агентства" },
   { href: "/system", label: "ИИ-система" },
+  { href: "/dashboard", label: "Демо дашборда" },
   { href: "/cases", label: "Кейсы" },
   { href: "/about", label: "О нас" },
   { href: "/contacts", label: "Контакты" },

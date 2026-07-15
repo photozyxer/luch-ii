@@ -1,0 +1,27 @@
+import type { Metadata } from "next";
+import PageIntro from "@/components/page-intro";
+import DashboardApp from "@/components/dashboard-app";
+
+export const metadata: Metadata = {
+  title: "Дашборд ЛУЧ — командный центр застройщика | демо",
+  description:
+    "Интерактивный командный центр: сквозная воронка от показов до выручки, KPI план-факт, графики по каналам, воронко-based прогноз и слой рекомендаций «что делать». Демо на синтетических данных на порядках застройщика.",
+};
+
+export default function DashboardPage() {
+  return (
+    <>
+      <PageIntro
+        kicker="Командный центр · демо"
+        title={
+          <>
+            Дашборд ЛУЧ — <span className="text-spectrum">данные плюс решения</span>
+          </>
+        }
+        lead="Плотная BI-подача, как в отчётах сквозной аналитики, но в дизайне ЛУЧ и с тем, чего нет у обычных дашбордов: планом-фактом на каждой метрике и слоем рекомендаций «что делать». Фильтры вверху реально пересчитывают все виджеты. Данные синтетические, на реальных порядках застройщика."
+        color="var(--c-indigo)"
+      />
+      <DashboardApp />
+    </>
+  );
+}

@@ -255,12 +255,20 @@ export default function Home() {
                   словами, ответит по актуальным данным.
                 </p>
               </div>
-              <Link
-                href="/system#dashboard"
-                className="shrink-0 font-semibold text-fg transition-colors hover:text-indigo"
-              >
-                Как это выглядит →
-              </Link>
+              <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center">
+                <Link
+                  href="/dashboard"
+                  className="glow-beam rounded-xl bg-beam px-5 py-3 text-center text-sm font-semibold text-white transition-transform hover:scale-[1.03]"
+                >
+                  Живое демо →
+                </Link>
+                <Link
+                  href="/system#dashboard"
+                  className="text-center font-semibold text-fg transition-colors hover:text-indigo"
+                >
+                  Как это устроено
+                </Link>
+              </div>
             </div>
           </GlowCard>
         </Reveal>

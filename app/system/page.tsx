@@ -343,6 +343,12 @@ export default function SystemPage() {
                     </li>
                   ))}
                 </ul>
+                <Link
+                  href="/dashboard"
+                  className="glow-beam mt-7 inline-block rounded-xl bg-beam px-5 py-3 text-sm font-semibold text-white transition-transform hover:scale-[1.03]"
+                >
+                  Открыть живое демо дашборда →
+                </Link>
               </div>
 
               {/* мокап утреннего статуса в Telegram */}
