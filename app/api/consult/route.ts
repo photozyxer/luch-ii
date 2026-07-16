@@ -73,7 +73,7 @@ async function notifyLead(phone: string, history: Msg[]) {
     .join("\n")
     .slice(0, 3000);
   const text = [
-    "💬 Лид из чат-консультанта («Милый дом», демо)",
+    "💬 Лид из чат-консультанта (ЖК «Притяжение», демо)",
     `Телефон: ${phone}`,
     `\nДиалог:\n${dialog}`,
     `\nПолучено: ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Yekaterinburg" })}`,

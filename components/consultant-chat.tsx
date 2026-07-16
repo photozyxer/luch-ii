@@ -7,14 +7,14 @@ type Msg = { role: "user" | "assistant"; content: string };
 const GREETING: Msg = {
   role: "assistant",
   content:
-    "Здравствуйте! Я Мила, консультант дома «Милый дом» от BAZA Development 🏡 Помогу подобрать квартиру, расскажу про цены, акции и способы покупки. Что вас интересует?",
+    "Здравствуйте! Я Ника, консультант ЖК «Притяжение» от застройщика НИКС 🏡 Помогу подобрать квартиру с готовой отделкой, расскажу про цены, акции и ипотеку. Что вас интересует?",
 };
 
 const CHIPS = [
   "Какие квартиры есть в продаже?",
-  "Сколько стоит двушка?",
   "Какие сейчас акции?",
-  "Можно в рассрочку?",
+  "Есть однокомнатные?",
+  "Ипотека под 3,5% — правда?",
   "А если дорого?",
   "Когда сдача дома?",
 ];
@@ -112,11 +112,11 @@ export default function ConsultantChat() {
               "linear-gradient(135deg, var(--c-cyan), var(--c-indigo))",
           }}
         >
-          М
+          Н
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">
-            Мила · консультант «Милого дома»
+            Ника · консультант ЖК «Притяжение»
           </p>
           <p className="flex items-center gap-1.5 text-xs text-muted">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
