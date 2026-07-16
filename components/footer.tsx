@@ -5,6 +5,7 @@ const nav = [
   { href: "/system", label: "ИИ-система" },
   { href: "/dashboard", label: "Демо дашборда" },
   { href: "/consultant", label: "Демо консультанта" },
+  { href: "/smm", label: "Демо SMM" },
   { href: "/cases", label: "Кейсы" },
   { href: "/about", label: "О нас" },
   { href: "/contacts", label: "Контакты" },
