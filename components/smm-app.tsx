@@ -16,7 +16,7 @@ type SinglePost = { title: string; text: string; caption: string; hashtags: stri
 type Mode = "carousel" | "post";
 
 /* ── фоны слайдов: бренд-графика (по гайду Fenomen) + реальные фото ЖК ── */
-type BgId = "brand" | "paper" | "photo1" | "photo2" | "photo3" | "photo4" | "photo5" | "photo6";
+type BgId = "brand" | "paper" | "photo1" | "photo2" | "photo3" | "photo4" | "photo5";
 const BGS: { id: BgId; label: string; photo?: boolean }[] = [
   { id: "brand", label: "Бренд" },
   { id: "paper", label: "Светлый" },
@@ -25,7 +25,6 @@ const BGS: { id: BgId; label: string; photo?: boolean }[] = [
   { id: "photo3", label: "Отделка", photo: true },
   { id: "photo4", label: "Лобби", photo: true },
   { id: "photo5", label: "Вход", photo: true },
-  { id: "photo6", label: "Качели", photo: true },
 ];
 /* position — точка кадрирования под макет 4:5: у ландшафтных фото режутся
    бока (важен % по горизонтали), у портретных — верх/низ */
@@ -35,7 +34,6 @@ const PHOTO_SRC: Record<string, { src: string; position: string }> = {
   photo3: { src: "/smm/real-interior.jpg", position: "22% center" }, // окно, не глухая стена
   photo4: { src: "/smm/real-lobby.jpg", position: "center 90%" }, // диван + вывеска, без решётки потолка
   photo5: { src: "/smm/real-playground.jpg", position: "45% 75%" }, // вход, камни, деревья
-  photo6: { src: "/smm/real-lawn.jpg", position: "center 100%" }, // газон и качели внизу
 };
 
 const DEMO_CAROUSEL: Carousel = {
