@@ -1,14 +1,12 @@
 import { SYSTEM_PROMPT } from "@/lib/consultant-kb";
+import { llmFetch } from "@/lib/llm";
 
 /**
  * Чат ИИ-консультанта (демо агента «Консультант ЖК»).
- * Проксирует диалог в LLM (OpenAI-совместимый API) со стримингом; если клиент
- * оставил телефон — передаёт лид с историей диалога в Telegram.
+ * Проксирует диалог в LLM (DeepSeek → OpenAI, см. lib/llm.ts) со стримингом;
+ * если клиент оставил телефон — передаёт лид с историей диалога в Telegram.
  */
 
-const LLM_URL =
-  process.env.LLM_BASE_URL ?? "https://api.openai.com/v1/chat/completions";
-const LLM_MODEL = process.env.LLM_MODEL ?? "gpt-4.1";
 const TG_API = "https://api.telegram.org";
 
 /* ── лимиты: публичный LLM-эндпоинт тратит реальные деньги ── */
@@ -92,12 +90,6 @@ async function notifyLead(phone: string, history: Msg[]) {
 }
 
 export async function POST(req: Request) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    console.error("consult: OPENAI_API_KEY is not configured");
-    return Response.json({ error: "not configured" }, { status: 500 });
-  }
-
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (rateLimited(ip)) {
@@ -119,23 +111,17 @@ export async function POST(req: Request) {
   const phone = findPhone(messages[messages.length - 1].content);
   const leadPromise = phone ? notifyLead(phone, messages) : null;
 
-  const upstream = await fetch(LLM_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: LLM_MODEL,
-      stream: true,
-      max_tokens: MAX_TOKENS,
-      temperature: 0.7,
-      messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
-    }),
+  const upstream = await llmFetch("consult", {
+    stream: true,
+    max_tokens: MAX_TOKENS,
+    temperature: 0.7,
+    messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
   });
 
+  if (!upstream) {
+    return Response.json({ error: "not configured" }, { status: 500 });
+  }
   if (!upstream.ok || !upstream.body) {
-    console.error("consult: llm failed", upstream.status, await upstream.text());
     return Response.json({ error: "llm unavailable" }, { status: 502 });
   }
 

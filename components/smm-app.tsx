@@ -12,22 +12,28 @@ import {
 
 type Slide = { kind: "hook" | "value" | "cta"; title: string; text: string };
 type Carousel = { slides: Slide[]; caption: string; hashtags: string[] };
+type SinglePost = { title: string; text: string; caption: string; hashtags: string[] };
+type Mode = "carousel" | "post";
 
-/* ── фоны слайдов: бренд-графика (SVG/CSS) + AI-фото (пре-генерация) ── */
-type BgId = "brand" | "paper" | "photo1" | "photo2" | "photo3" | "photo4";
-const BGS: { id: BgId; label: string; ai?: boolean }[] = [
+/* ── фоны слайдов: бренд-графика (по гайду Fenomen) + реальные фото ЖК ── */
+type BgId = "brand" | "paper" | "photo1" | "photo2" | "photo3" | "photo4" | "photo5" | "photo6";
+const BGS: { id: BgId; label: string; photo?: boolean }[] = [
   { id: "brand", label: "Бренд" },
   { id: "paper", label: "Светлый" },
-  { id: "photo1", label: "Двор", ai: true },
-  { id: "photo2", label: "Интерьер", ai: true },
-  { id: "photo3", label: "Фасады", ai: true },
-  { id: "photo4", label: "Бульвар", ai: true },
+  { id: "photo1", label: "Двор", photo: true },
+  { id: "photo2", label: "Фасад", photo: true },
+  { id: "photo3", label: "Отделка", photo: true },
+  { id: "photo4", label: "Лобби", photo: true },
+  { id: "photo5", label: "Детская", photo: true },
+  { id: "photo6", label: "Газон", photo: true },
 ];
 const PHOTO_SRC: Record<string, string> = {
-  photo1: "/smm/bg-court.jpg",
-  photo2: "/smm/bg-interior.jpg",
-  photo3: "/smm/bg-facade.jpg",
-  photo4: "/smm/bg-blvd.jpg",
+  photo1: "/smm/real-court.jpg",
+  photo2: "/smm/real-facade.jpg",
+  photo3: "/smm/real-interior.jpg",
+  photo4: "/smm/real-lobby.jpg",
+  photo5: "/smm/real-playground.jpg",
+  photo6: "/smm/real-lawn.jpg",
 };
 
 const DEMO_CAROUSEL: Carousel = {
@@ -43,6 +49,14 @@ const DEMO_CAROUSEL: Carousel = {
   caption:
     "Академический растёт быстрее всех районов Екатеринбурга — и вот почему мы строим «Притяжение» именно здесь 🧡 Листайте карусель: 5 причин, из-за которых сюда переезжают семьями. А вы бы что добавили шестым пунктом?",
   hashtags: ["#жкпритяжение", "#академический", "#новостройкиекатеринбург", "#квартирасотделкой", "#екатеринбург", "#переезд", "#новостройка2026", "#купитьквартиру"],
+};
+
+const DEMO_POST: SinglePost = {
+  title: "Двор без машин — это как?",
+  text: "Весь транспорт — в многоуровневом паркинге до 500 мест. Во дворе остаются только площадки, зелень и люди. Дети гуляют без «осторожно, машина!».",
+  caption:
+    "Первое, что замечают на экскурсии по «Притяжению», — тишина во дворе 🧡 Машины уезжают в паркинг, а двор остаётся людям. Приезжайте посмотреть сами — офис продаж на Сахарова, 47. Как вам такой формат двора?",
+  hashtags: ["#жкпритяжение", "#академический", "#дворбезмашин", "#новостройкиекатеринбург", "#екатеринбург", "#квартирасотделкой"],
 };
 
 /* ────────────────────────── слайд карусели ────────────────────────── */
@@ -79,9 +93,10 @@ function SlideCard({
       : { background: "#fff" };
   }
 
+  // палитра по гайду: только Warm Red, Cool Black и белый
   const light = isPhoto || ((bg === "brand") && (isHook || isCta));
   const fg = light ? "#ffffff" : BRAND.navy;
-  const accent = light ? BRAND.yellow : BRAND.coral;
+  const accent = light ? "#ffffff" : BRAND.coral;
 
   return (
     <div
@@ -142,15 +157,72 @@ function SlideCard({
   );
 }
 
+/* ────────────────────────── одиночный пост ────────────────────────── */
+
+function PostCard({ post, bg }: { post: SinglePost; bg: BgId }) {
+  const isPhoto = bg.startsWith("photo");
+
+  let bgStyle: React.CSSProperties;
+  if (isPhoto) {
+    bgStyle = {
+      backgroundImage: `linear-gradient(180deg, ${BRAND.navy}11 0%, ${BRAND.navy}F0 82%), url(${PHOTO_SRC[bg]})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+    };
+  } else if (bg === "paper") {
+    bgStyle = { background: BRAND.paper };
+  } else {
+    bgStyle = { background: BRAND.coral };
+  }
+
+  const light = isPhoto || bg === "brand";
+  const fg = light ? "#ffffff" : BRAND.navy;
+
+  return (
+    <div
+      className="relative flex h-full w-full flex-col justify-between overflow-hidden p-[7%]"
+      style={{ ...bgStyle, color: fg, fontFamily: "var(--font-body), Manrope, sans-serif" }}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-[10%] -top-[8%] select-none leading-none"
+        style={{ fontSize: "min(34cqw, 300px)", color: light ? "#ffffff" : BRAND.coral, opacity: light ? 0.22 : 0.1 }}
+      >
+        ✦
+      </div>
+
+      <div className="relative text-[3.4cqw] font-semibold tracking-[0.14em]">{BRAND.logo}</div>
+
+      <div className="relative">
+        <h3 className="font-semibold leading-[1.1]" style={{ fontSize: "8.6cqw", letterSpacing: "-0.01em" }}>
+          {post.title}
+        </h3>
+        {post.text && (
+          <p className="mt-[3.5cqw] leading-[1.45]" style={{ fontSize: "4.4cqw", opacity: 0.9 }}>
+            {post.text}
+          </p>
+        )}
+      </div>
+
+      <div className="relative flex items-center justify-between text-[3cqw]" style={{ opacity: 0.8 }}>
+        <span>{BRAND.tagline}</span>
+        <span>{BRAND.site}</span>
+      </div>
+    </div>
+  );
+}
+
 /* ────────────────────────── основной модуль ────────────────────────── */
 
 export default function SmmApp() {
   const [topic, setTopic] = useState("");
+  const [mode, setMode] = useState<Mode>("carousel");
   const [formula, setFormula] = useState<FormulaId>("listicle");
   const [carousel, setCarousel] = useState<Carousel>(DEMO_CAROUSEL);
+  const [post, setPost] = useState<SinglePost>(DEMO_POST);
   const [isDemoData, setIsDemoData] = useState(true);
   const [current, setCurrent] = useState(0);
-  const [bg, setBg] = useState<BgId>("brand");
+  const [bg, setBg] = useState<BgId>("photo1");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -165,20 +237,24 @@ export default function SmmApp() {
       const res = await fetch("/api/smm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: t, formula }),
+        body: JSON.stringify({ topic: t, formula, mode }),
       });
       if (res.status === 429) throw new Error("Слишком много генераций подряд — минутку паузы.");
       if (!res.ok) throw new Error("Не получилось сгенерировать. Попробуйте ещё раз.");
-      const data: Carousel = await res.json();
-      setCarousel(data);
+      const data = await res.json();
+      if (mode === "post") {
+        setPost(data as SinglePost);
+      } else {
+        setCarousel(data as Carousel);
+        setCurrent(0);
+      }
       setIsDemoData(false);
-      setCurrent(0);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Ошибка генерации.");
     } finally {
       setBusy(false);
     }
-  }, [topic, formula, busy]);
+  }, [topic, formula, mode, busy]);
 
   const download = useCallback(async () => {
     if (!slideRef.current) return;
@@ -189,18 +265,22 @@ export default function SmmApp() {
     });
     const a = document.createElement("a");
     a.href = png;
-    a.download = `prityazhenie-slide-${current + 1}.png`;
+    a.download =
+      mode === "post" ? "prityazhenie-post.png" : `prityazhenie-slide-${current + 1}.png`;
     a.click();
-  }, [current]);
+  }, [current, mode]);
+
+  const caption = mode === "post" ? post.caption : carousel.caption;
+  const hashtags = mode === "post" ? post.hashtags : carousel.hashtags;
 
   const copyCaption = useCallback(() => {
     navigator.clipboard
-      .writeText(`${carousel.caption}\n\n${carousel.hashtags.join(" ")}`)
+      .writeText(`${caption}\n\n${hashtags.join(" ")}`)
       .then(() => {
         setCopied(true);
         setTimeout(() => setCopied(false), 1800);
       });
-  }, [carousel]);
+  }, [caption, hashtags]);
 
   const total = carousel.slides.length;
 
@@ -254,19 +334,42 @@ export default function SmmApp() {
       {/* ── 2. Генератор ── */}
       <section id="smm-gen" className="scroll-mt-28">
         <h2 className="font-display text-2xl font-semibold sm:text-3xl">
-          Генератор каруселей — в фирменном стиле ЖК
+          Генератор контента — в фирменном стиле ЖК
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-muted">
-          Тема + виральная формула → структура карусели по фактам проекта → слайды
-          в бренд-ките «Притяжения» (коралл #FF574C, фирменная звезда, типографика).
+          Тема + формат → контент по фактам проекта → макеты в бренд-ките
+          «Притяжения» по официальному гайдлайну (Warm Red #FF4438, Cool Black,
+          фирменная звезда) на реальных фото ЖК.
         </p>
 
         <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_minmax(340px,420px)]">
           {/* левая колонка: управление + подпись */}
           <div>
             <div className="glass rounded-2xl p-6">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted">
-                Тема карусели
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted">
+                Формат
+              </p>
+              <div className="mt-2 flex gap-2">
+                {([
+                  { id: "carousel", label: "Карусель" },
+                  { id: "post", label: "Пост (текст + картинка)" },
+                ] as { id: Mode; label: string }[]).map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setMode(m.id)}
+                    className={`rounded-full border px-3.5 py-1.5 text-xs transition-colors ${
+                      mode === m.id
+                        ? "border-transparent bg-beam font-semibold text-white"
+                        : "border-white/12 text-muted hover:border-white/25 hover:text-fg"
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+              <label className="mt-4 block text-xs font-semibold uppercase tracking-wider text-muted">
+                Тема {mode === "post" ? "поста" : "карусели"}
               </label>
               <input
                 value={topic}
@@ -276,38 +379,46 @@ export default function SmmApp() {
                 placeholder="Например: почему квартира с отделкой выгоднее"
                 className="mt-2 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm outline-none transition-colors placeholder:text-muted/60 focus:border-white/25"
               />
-              <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-muted">
-                Виральная формула
-              </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {FORMULAS.map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => setFormula(f.id)}
-                    title={f.hint}
-                    className={`rounded-full border px-3.5 py-1.5 text-xs transition-colors ${
-                      formula === f.id
-                        ? "border-transparent bg-beam font-semibold text-white"
-                        : "border-white/12 text-muted hover:border-white/25 hover:text-fg"
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
+              {mode === "carousel" && (
+                <>
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-muted">
+                    Виральная формула
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {FORMULAS.map((f) => (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => setFormula(f.id)}
+                        title={f.hint}
+                        className={`rounded-full border px-3.5 py-1.5 text-xs transition-colors ${
+                          formula === f.id
+                            ? "border-transparent bg-beam font-semibold text-white"
+                            : "border-white/12 text-muted hover:border-white/25 hover:text-fg"
+                        }`}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
               <button
                 type="button"
                 onClick={generate}
                 disabled={busy || !topic.trim()}
                 className="glow-beam mt-5 rounded-xl bg-beam px-5 py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-40"
               >
-                {busy ? "Генерирую…" : "Сгенерировать карусель"}
+                {busy
+                  ? "Генерирую…"
+                  : mode === "post"
+                    ? "Сгенерировать пост"
+                    : "Сгенерировать карусель"}
               </button>
               {error && <p className="mt-3 text-xs text-amber-300/90">{error}</p>}
               {isDemoData && !busy && (
                 <p className="mt-3 text-xs text-muted">
-                  Сейчас показан пример. Введите свою тему — агент соберёт карусель заново.
+                  Сейчас показан пример. Введите свою тему — агент соберёт контент заново.
                 </p>
               )}
             </div>
@@ -326,22 +437,23 @@ export default function SmmApp() {
                   {copied ? "✓ Скопировано" : "Копировать"}
                 </button>
               </div>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed">{carousel.caption}</p>
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed">{caption}</p>
               <p className="mt-3 text-xs leading-relaxed text-cyan-300/80">
-                {carousel.hashtags.join(" ")}
+                {hashtags.join(" ")}
               </p>
             </div>
 
-            {/* стадия генеративных медиа */}
+            {/* фотофоны */}
             <div className="glass mt-4 rounded-2xl p-6">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted">
-                Стадия «генеративные медиа»
+                Реальные фото проекта
               </p>
               <p className="mt-2 text-sm leading-relaxed text-muted">
-                Фоны «Двор», «Интерьер», «Фасады», «Бульвар» — сгенерированы ИИ под
-                стиль проекта (один раз, при сборке демо). В боевом контуре агент
-                генерирует изображения и видео под каждый слайд автоматически, а
-                выпускающий контроль остаётся за человеком.
+                Фоны — реальные фотографии ЖК «Притяжение»: двор, фасады, чистовая
+                отделка, места общего пользования и благоустройство. Оформление —
+                строго по фирменному гайдлайну Fenomen (Warm Red, Cool Black,
+                фирменная звезда). В боевом контуре агент сам подбирает фото под
+                тему слайда, выпускающий контроль остаётся за человеком.
               </p>
             </div>
           </div>
@@ -362,7 +474,7 @@ export default function SmmApp() {
                   }`}
                 >
                   {b.label}
-                  {b.ai && <span className="ml-1 text-[9px] text-cyan-300">AI</span>}
+                  {b.photo && <span className="ml-1 text-[9px] text-cyan-300">фото</span>}
                 </button>
               ))}
             </div>
@@ -372,49 +484,55 @@ export default function SmmApp() {
               className="mt-3 w-full overflow-hidden rounded-none"
               style={{ aspectRatio: "4 / 5", containerType: "inline-size" }}
             >
-              <SlideCard slide={carousel.slides[current]} index={current} total={total} bg={bg} />
+              {mode === "post" ? (
+                <PostCard post={post} bg={bg} />
+              ) : (
+                <SlideCard slide={carousel.slides[current]} index={current} total={total} bg={bg} />
+              )}
             </div>
 
-            {/* навигация */}
-            <div className="mt-3 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setCurrent((c) => Math.max(0, c - 1))}
-                disabled={current === 0}
-                className="glass rounded-xl px-4 py-2 text-sm disabled:opacity-30"
-              >
-                ←
-              </button>
-              <div className="flex gap-1.5">
-                {carousel.slides.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setCurrent(i)}
-                    aria-label={`Слайд ${i + 1}`}
-                    className="h-1.5 rounded-full transition-all"
-                    style={{
-                      width: i === current ? 18 : 6,
-                      background: i === current ? "#fff" : "rgba(255,255,255,0.3)",
-                    }}
-                  />
-                ))}
+            {/* навигация — только для карусели */}
+            {mode === "carousel" && (
+              <div className="mt-3 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setCurrent((c) => Math.max(0, c - 1))}
+                  disabled={current === 0}
+                  className="glass rounded-xl px-4 py-2 text-sm disabled:opacity-30"
+                >
+                  ←
+                </button>
+                <div className="flex gap-1.5">
+                  {carousel.slides.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setCurrent(i)}
+                      aria-label={`Слайд ${i + 1}`}
+                      className="h-1.5 rounded-full transition-all"
+                      style={{
+                        width: i === current ? 18 : 6,
+                        background: i === current ? "#fff" : "rgba(255,255,255,0.3)",
+                      }}
+                    />
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCurrent((c) => Math.min(total - 1, c + 1))}
+                  disabled={current === total - 1}
+                  className="glass rounded-xl px-4 py-2 text-sm disabled:opacity-30"
+                >
+                  →
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setCurrent((c) => Math.min(total - 1, c + 1))}
-                disabled={current === total - 1}
-                className="glass rounded-xl px-4 py-2 text-sm disabled:opacity-30"
-              >
-                →
-              </button>
-            </div>
+            )}
             <button
               type="button"
               onClick={download}
               className="glass mt-3 w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors hover:border-white/25"
             >
-              ⬇ Скачать слайд {current + 1} в PNG (1080×1350)
+              ⬇ Скачать {mode === "post" ? "пост" : `слайд ${current + 1}`} в PNG (1080×1350)
             </button>
           </div>
         </div>
