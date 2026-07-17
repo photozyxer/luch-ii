@@ -24,16 +24,18 @@ const BGS: { id: BgId; label: string; photo?: boolean }[] = [
   { id: "photo2", label: "Фасад", photo: true },
   { id: "photo3", label: "Отделка", photo: true },
   { id: "photo4", label: "Лобби", photo: true },
-  { id: "photo5", label: "Детская", photo: true },
-  { id: "photo6", label: "Газон", photo: true },
+  { id: "photo5", label: "Вход", photo: true },
+  { id: "photo6", label: "Качели", photo: true },
 ];
-const PHOTO_SRC: Record<string, string> = {
-  photo1: "/smm/real-court.jpg",
-  photo2: "/smm/real-facade.jpg",
-  photo3: "/smm/real-interior.jpg",
-  photo4: "/smm/real-lobby.jpg",
-  photo5: "/smm/real-playground.jpg",
-  photo6: "/smm/real-lawn.jpg",
+/* position — точка кадрирования под макет 4:5: у ландшафтных фото режутся
+   бока (важен % по горизонтали), у портретных — верх/низ */
+const PHOTO_SRC: Record<string, { src: string; position: string }> = {
+  photo1: { src: "/smm/real-court.jpg", position: "center" }, // пре-кроп 4:5: площадка, лавки, зелень
+  photo2: { src: "/smm/real-facade.jpg", position: "center" },
+  photo3: { src: "/smm/real-interior.jpg", position: "22% center" }, // окно, не глухая стена
+  photo4: { src: "/smm/real-lobby.jpg", position: "center 90%" }, // диван + вывеска, без решётки потолка
+  photo5: { src: "/smm/real-playground.jpg", position: "45% 75%" }, // вход, камни, деревья
+  photo6: { src: "/smm/real-lawn.jpg", position: "center 100%" }, // газон и качели внизу
 };
 
 const DEMO_CAROUSEL: Carousel = {
@@ -80,9 +82,9 @@ function SlideCard({
   let bgStyle: React.CSSProperties = {};
   if (isPhoto) {
     bgStyle = {
-      backgroundImage: `linear-gradient(180deg, ${BRAND.navy}22 0%, ${BRAND.navy}E8 78%), url(${PHOTO_SRC[bg]})`,
+      backgroundImage: `linear-gradient(180deg, ${BRAND.navy}22 0%, ${BRAND.navy}E8 78%), url(${PHOTO_SRC[bg].src})`,
       backgroundSize: "cover",
-      backgroundPosition: "center",
+      backgroundPosition: PHOTO_SRC[bg].position,
     };
   } else if (bg === "paper") {
     bgStyle = { background: BRAND.paper };
@@ -165,9 +167,9 @@ function PostCard({ post, bg }: { post: SinglePost; bg: BgId }) {
   let bgStyle: React.CSSProperties;
   if (isPhoto) {
     bgStyle = {
-      backgroundImage: `linear-gradient(180deg, ${BRAND.navy}11 0%, ${BRAND.navy}F0 82%), url(${PHOTO_SRC[bg]})`,
+      backgroundImage: `linear-gradient(180deg, ${BRAND.navy}11 0%, ${BRAND.navy}F0 82%), url(${PHOTO_SRC[bg].src})`,
       backgroundSize: "cover",
-      backgroundPosition: "center",
+      backgroundPosition: PHOTO_SRC[bg].position,
     };
   } else if (bg === "paper") {
     bgStyle = { background: BRAND.paper };
