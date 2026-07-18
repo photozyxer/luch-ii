@@ -38,6 +38,9 @@ export default function Stat({
         tween = gsap.to(counter, {
           n: value,
           duration: 1.6,
+          // ждём, пока карточка проявится reveal-анимацией, иначе счёт
+          // отрабатывает на невидимом элементе и его никто не видит
+          delay: 0.55,
           ease: "expo.out",
           onUpdate: () => {
             el.textContent = fmt(counter.n);

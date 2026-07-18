@@ -29,8 +29,8 @@ export default function Footer() {
             </span>
           </div>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
-            Performance-агентство для застройщиков с собственной мультиагентной
-            ИИ-системой. Жилые комплексы, загородные посёлки, брокеры.
+            Performance-агентство для застройщиков с собственной ИИ-системой
+            ЛУЧ. Жилые комплексы, загородные посёлки, брокеры.
           </p>
         </div>
 

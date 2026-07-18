@@ -1,5 +1,7 @@
 import Link from "next/link";
 import Hero from "@/components/hero";
+import FunnelUplift from "@/components/funnel-uplift";
+import CjmMap from "@/components/cjm-map";
 import Reveal from "@/components/reveal";
 import GlowCard from "@/components/glow-card";
 import Marquee from "@/components/marquee";
@@ -26,44 +28,44 @@ const pains = [
 const agents = [
   {
     id: "calls",
-    tag: "Продажи · КЦ",
-    title: "Анализ звонков",
+    tag: "Анализ звонков · КЦ",
+    title: "ЛУЧ-Звонки",
     desc: "Слушает каждый звонок: чек-лист, скрипт, отработка возражений. Показывает, какой менеджер теряет сделки и на чём именно.",
     live: true,
     color: "var(--c-cyan)",
   },
   {
     id: "analytics",
-    tag: "Аналитика",
-    title: "Сквозная + план-факт",
+    tag: "Сквозная + план-факт",
+    title: "ЛУЧ-Аналитика",
     desc: "Сводит рекламу и продажи в одну картину: прогноз от прокси-метрик до сделок, мониторинг цен и активности конкурентов.",
     color: "var(--c-indigo)",
   },
   {
     id: "performance",
-    tag: "Performance",
-    title: "ИИ ведёт рекламу",
+    tag: "ИИ ведёт рекламу",
+    title: "ЛУЧ-Перформанс",
     desc: "Сам настраивает и оптимизирует Директ и таргет, следит за прайс-площадками. Изменения утверждает человек — факапы не проходят.",
     color: "var(--c-violet)",
   },
   {
     id: "smm",
-    tag: "SMM",
-    title: "Соцсети и сообщества",
+    tag: "Соцсети и сообщества",
+    title: "ЛУЧ-SMM",
     desc: "Пишет посты, собирает макеты, публикует и следит за реакцией в сообществах ЖК. Черновики делает ИИ, финальное слово — за человеком.",
     color: "var(--c-warm)",
   },
   {
     id: "production",
-    tag: "Продакшн",
-    title: "Креативы и карточки",
+    tag: "Креативы и карточки",
+    title: "ЛУЧ-Продакшн",
     desc: "Баннеры, ролики, AI-staging, карточки квартир из проектной документации и шахматка на сайт — за минуты, а не недели.",
     color: "var(--c-cyan)",
   },
   {
     id: "consultant",
-    tag: "Консультант ЖК",
-    title: "Отвечает 24/7",
+    tag: "Консультант ЖК · 24/7",
+    title: "ЛУЧ-Консультант",
     desc: "Чат на сайте и в мессенджерах: подбирает лоты, рассказывает про акции, квалифицирует лид и передаёт его в отдел продаж тёплым.",
     color: "var(--c-indigo)",
   },
@@ -102,7 +104,7 @@ export default function Home() {
             data-reveal
             className="mt-3 max-w-3xl font-display text-3xl font-semibold leading-tight sm:text-5xl"
           >
-            Воронка рвётся <span className="text-spectrum">на стыках подрядчиков</span>
+            Сделки теряются <span className="text-spectrum">на стыках отделов и подрядчиков</span>
           </h2>
 
           <div className="mt-12 grid gap-5 md:grid-cols-3">
@@ -124,11 +126,59 @@ export default function Home() {
           </div>
 
           <p data-reveal className="mt-10 max-w-3xl text-lg leading-relaxed text-muted">
-            Деньги теряются между рекламой, колл-центром и отделом продаж —
+            Деньги утекают между рекламой, колл-центром и отделом продаж —
             там, где кончается зона ответственности одного подрядчика и ещё не
             началась зона другого. Поэтому мы держим воронку целиком:{" "}
             <span className="text-fg">одной командой и одной системой, от первого клика до брони</span>.
           </p>
+        </Reveal>
+      </section>
+
+      {/* --- Воронка было → стало: эффект модулей в деньгах --- */}
+      <section id="uplift" className="scroll-mt-24 py-8 sm:py-12">
+        <Reveal className="mx-auto max-w-7xl px-4 sm:px-6">
+          <p data-reveal className="kicker">
+            Эффект в деньгах
+          </p>
+          <h2
+            data-reveal
+            className="mt-3 max-w-3xl font-display text-3xl font-semibold leading-tight sm:text-5xl"
+          >
+            ЛУЧ наращивает продажи — <span className="text-spectrum">было → стало</span>
+          </h2>
+          <p data-reveal className="mt-4 max-w-3xl leading-relaxed text-muted">
+            Каждый модуль усиливает свой этап: перформанс и SMM наращивают
+            вал, консультант доводит обращения до целевых, анализ звонков и
+            план-факт дожимают конверсию в сделку. По воронке эффекты
+            перемножаются.
+          </p>
+          <div data-reveal className="mt-10">
+            <FunnelUplift />
+          </div>
+        </Reveal>
+      </section>
+
+      {/* --- CJM: где модули работают на пути клиента --- */}
+      <section id="cjm" className="scroll-mt-24 py-24 sm:py-32">
+        <Reveal className="mx-auto max-w-7xl px-4 sm:px-6">
+          <p data-reveal className="kicker">
+            Путь клиента
+          </p>
+          <h2
+            data-reveal
+            className="mt-3 max-w-3xl font-display text-3xl font-semibold leading-tight sm:text-4xl"
+          >
+            Как работает ИИ-ЛУЧ{" "}
+            <span className="text-spectrum">на пути клиента</span>
+          </h2>
+          <p data-reveal className="mt-4 max-w-3xl leading-relaxed text-muted">
+            От первого касания с брендом до сделки покупатель проходит шесть
+            шагов — и на каждом его можно потерять. Модули ЛУЧ закрывают путь
+            целиком, без «слепых зон» между подрядчиками.
+          </p>
+          <div data-reveal className="mt-10">
+            <CjmMap />
+          </div>
         </Reveal>
       </section>
 
@@ -142,17 +192,17 @@ export default function Home() {
             data-reveal
             className="mt-3 max-w-3xl font-display text-3xl font-semibold leading-tight sm:text-5xl"
           >
-            Сделаем за вас — <span className="text-spectrum">или дадим инструмент</span>
+            Полный цикл — <span className="text-spectrum">от знания бренда до брони</span>
           </h2>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
-            <GlowCard className="glass rounded-3xl p-8" color="var(--c-cyan)">
+          <div className="mt-12 grid grid-cols-2 gap-3 sm:gap-6">
+            <GlowCard className="glass rounded-3xl p-4 sm:p-8" color="var(--c-cyan)">
               <div data-reveal>
                 <div className="text-sm font-semibold text-cyan">Услуги агентства</div>
-                <h3 className="mt-3 font-display text-2xl font-semibold">
+                <h3 className="mt-2 font-display text-lg font-semibold sm:mt-3 sm:text-2xl">
                   Берём воронку под ключ
                 </h3>
-                <p className="mt-3 leading-relaxed text-muted">
+                <p className="mt-2 text-xs leading-relaxed text-muted sm:mt-3 sm:text-base">
                   Стратегия, performance, SMM, продакшн и аналитика — руками
                   нашей команды. ИИ работает под капотом: делаем быстрее
                   обычного агентства, а отвечаем не часами, а обращениями и
@@ -167,22 +217,22 @@ export default function Home() {
               </div>
             </GlowCard>
 
-            <GlowCard className="glass rounded-3xl p-8" color="var(--c-violet)">
+            <GlowCard className="glass rounded-3xl p-4 sm:p-8" color="var(--c-violet)">
               <div data-reveal>
                 <div className="text-sm font-semibold text-violet">ИИ-система ЛУЧ</div>
-                <h3 className="mt-3 font-display text-2xl font-semibold">
+                <h3 className="mt-2 font-display text-lg font-semibold sm:mt-3 sm:text-2xl">
                   Подключите модули себе
                 </h3>
-                <p className="mt-3 leading-relaxed text-muted">
+                <p className="mt-2 text-xs leading-relaxed text-muted sm:mt-3 sm:text-base">
                   Свой отдел маркетинга справляется? Усильте его отдельными
-                  агентами: анализ звонков, дашборд план-факт, ИИ-консультант
-                  на сайт. Платите за модуль, а не за штат.
+                  ИИ-модулями ЛУЧ: анализ звонков, дашборд план-факт,
+                  консультант на сайт. Платите за модуль, а не за штат.
                 </p>
                 <Link
                   href="/system"
                   className="mt-6 inline-block font-semibold text-fg transition-colors hover:text-violet"
                 >
-                  Смотреть агентов →
+                  Смотреть модули →
                 </Link>
               </div>
             </GlowCard>
@@ -190,7 +240,7 @@ export default function Home() {
         </Reveal>
       </section>
 
-      {/* --- Сетка агентов --- */}
+      {/* --- Сетка ИИ-модулей --- */}
       <section id="agents" className="scroll-mt-24 py-24 sm:py-32">
         <Reveal className="mx-auto max-w-7xl px-4 sm:px-6" stagger={0.06}>
           <p data-reveal className="kicker">
@@ -200,43 +250,66 @@ export default function Home() {
             data-reveal
             className="mt-3 max-w-3xl font-display text-3xl font-semibold leading-tight sm:text-4xl"
           >
-            Шесть агентов — по одному на каждую вертикаль
+            6 ИИ-модулей ЛУЧ:
           </h2>
+          <p data-reveal className="mt-4 max-w-3xl leading-relaxed text-muted">
+            ЛУЧ — не обёртка над ChatGPT, а собственная специализированная
+            ИИ-разработка для застройщика: модули обучены на воронках, звонках
+            и стройке, работают на ваших данных и связаны в одну систему.
+          </p>
 
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {agents.map((a) => (
+          {/* модули — цветные плитки с лучом слева, нарочно другой ритм,
+              чем у glass-карточек остальных секций */}
+          <div className="mt-12 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+            {agents.map((a, i) => (
               <Link key={a.id} href={`/system#${a.id}`} data-reveal className="group">
-                <GlowCard
-                  className="glass relative h-full overflow-hidden rounded-2xl p-6 transition-transform duration-300 group-hover:-translate-y-1"
-                  color={a.color}
+                <div
+                  className="relative h-full overflow-hidden rounded-2xl p-4 pl-5 transition-transform duration-300 group-hover:-translate-y-1 sm:p-6 sm:pl-7"
+                  style={{
+                    background: `linear-gradient(135deg, color-mix(in oklab, ${a.color} 13%, transparent) 0%, rgba(255,255,255,0.02) 60%)`,
+                    border: `1px solid color-mix(in oklab, ${a.color} 30%, transparent)`,
+                  }}
                 >
-                  <div
-                    className="absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-30 blur-2xl transition-opacity group-hover:opacity-60"
-                    style={{ background: a.color }}
+                  {/* луч-полоса слева — фирменный ход вместо блоба */}
+                  <span
+                    className="absolute inset-y-3 left-0 w-[3px] rounded-full transition-all duration-300 group-hover:inset-y-1.5"
+                    style={{ background: a.color, boxShadow: `0 0 14px ${a.color}` }}
                     aria-hidden
                   />
-                  <div className="relative flex items-center justify-between">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-muted">
+                  <span className="num-ghost absolute right-3 top-2 text-4xl sm:text-5xl" aria-hidden>
+                    {`0${i + 1}`}
+                  </span>
+                  <div className="relative flex items-center gap-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted sm:text-xs">
                       {a.tag}
                     </span>
                     {a.live && (
-                      <span className="rounded-full bg-cyan/15 px-2 py-0.5 text-[11px] font-semibold text-cyan">
+                      <span className="hidden rounded-full bg-cyan/15 px-2 py-0.5 text-[11px] font-semibold text-cyan sm:inline">
                         уже в работе
                       </span>
                     )}
                   </div>
-                  <h3 className="relative mt-4 font-display text-xl font-semibold">
+                  <h3
+                    className="relative mt-2 font-display text-base font-semibold sm:mt-3 sm:text-xl"
+                    style={{ color: `color-mix(in oklab, ${a.color} 55%, white)` }}
+                  >
                     {a.title}
                   </h3>
-                  <p className="relative mt-2 text-sm leading-relaxed text-muted">
+                  <p className="relative mt-2 hidden text-sm leading-relaxed text-muted sm:block">
                     {a.desc}
                   </p>
-                </GlowCard>
+                  <span
+                    className="relative mt-3 hidden text-xs font-semibold opacity-0 transition-opacity group-hover:opacity-100 sm:inline-block"
+                    style={{ color: a.color }}
+                  >
+                    Подробнее →
+                  </span>
+                </div>
               </Link>
             ))}
           </div>
 
-          {/* дашборд — дирижёр агентов */}
+          {/* дашборд — дирижёр модулей */}
           <GlowCard
             className="glass mt-5 overflow-hidden rounded-2xl p-7 sm:p-9"
             color="var(--c-indigo)"
@@ -247,7 +320,7 @@ export default function Home() {
                   Командный центр
                 </span>
                 <h3 className="mt-3 font-display text-xl font-semibold sm:text-2xl">
-                  Дашборд ЛУЧ дирижирует всеми агентами
+                  ЛУЧ-Дашборд дирижирует всеми модулями
                 </h3>
                 <p className="mt-2 leading-relaxed text-muted">
                   Каждое утро — статусы и флаги в Telegram: что отклонилось от
@@ -284,7 +357,7 @@ export default function Home() {
             data-reveal
             className="mt-3 max-w-3xl font-display text-3xl font-semibold leading-tight sm:text-4xl"
           >
-            Цифры вместо имён — <span className="text-spectrum">имена под NDA</span>
+            Наши <span className="text-spectrum">кейсы</span>
           </h2>
 
           <div className="mt-12 grid gap-5 md:grid-cols-3">
@@ -336,50 +409,59 @@ export default function Home() {
         </Reveal>
       </section>
 
-      {/* --- Инструменты --- */}
-      <section className="py-16">
-        <Marquee items={tools} />
-      </section>
-
-      {/* --- CTA band --- */}
-      <section id="cta" className="scroll-mt-24 pb-24 sm:pb-32">
+      {/* --- Гарантия --- */}
+      <section id="guarantee" className="scroll-mt-24 py-8 sm:py-12">
         <Reveal className="mx-auto max-w-7xl px-4 sm:px-6">
           <div
             data-reveal
-            className="glass noise relative overflow-hidden rounded-3xl px-6 py-16 text-center sm:px-16"
+            className="glass relative overflow-hidden rounded-3xl p-8 sm:p-12"
           >
             <div
-              className="pointer-events-none absolute inset-x-0 top-0 h-40 opacity-60 blur-3xl"
-              style={{
-                background:
-                  "linear-gradient(90deg, var(--c-cyan), var(--c-indigo), var(--c-violet), var(--c-warm))",
-              }}
+              className="pointer-events-none absolute -left-16 -top-16 h-48 w-48 rounded-full opacity-25 blur-3xl"
+              style={{ background: "var(--c-cyan)" }}
               aria-hidden
             />
-            <p className="relative font-display text-2xl font-semibold sm:text-4xl">
-              Проверьте нас <span className="text-spectrum">на своих звонках</span>
-            </p>
-            <p className="relative mx-auto mt-4 max-w-xl leading-relaxed text-muted">
-              Пришлите 50 записей колл-центра — за 3 дня вернём разбор: где
-              воронка теряет деньги и что чинить первым. Бесплатно и без
-              обязательств.
-            </p>
-            <div className="relative mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link
-                href="/contacts?topic=calls"
-                className="glow-beam rounded-xl bg-beam px-6 py-3.5 font-semibold text-white transition-transform hover:scale-[1.03]"
-              >
-                Забрать разбор 50 звонков
-              </Link>
-              <Link
-                href="/contacts?topic=tender"
-                className="glass rounded-xl px-6 py-3.5 font-semibold text-fg transition-colors hover:text-white"
-              >
-                Пригласить в тендер
-              </Link>
+            <div className="relative grid items-center gap-8 lg:grid-cols-[1.3fr_1fr]">
+              <div>
+                <p className="kicker">Гарантия</p>
+                <h2 className="mt-3 font-display text-2xl font-semibold leading-tight sm:text-4xl">
+                  Если вас не устроит результат —{" "}
+                  <span className="text-spectrum">вы не платите*</span>
+                </h2>
+                <p className="mt-4 max-w-2xl leading-relaxed text-muted">
+                  Мы уверены в системе настолько, что берём риск первого
+                  месяца на себя. Вы смотрите на цифры — вал, целевые,
+                  динамику конверсий — и решаете, продолжать ли. Не понравится
+                  — расстанемся без счёта и без обид.
+                </p>
+                <p className="mt-6 text-xs leading-relaxed text-muted/70">
+                  * Первый месяц работы — за наш счёт: подключаем модули,
+                  работаем на ваших данных, показываем результат. Платите
+                  со второго месяца — только если решили продолжать.
+                </p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <Link
+                  href="/contacts?topic=consult"
+                  className="glow-beam rounded-xl bg-beam px-6 py-3.5 text-center font-semibold text-white transition-transform hover:scale-[1.03]"
+                >
+                  Запустить первый месяц
+                </Link>
+                <Link
+                  href="/contacts?topic=calls"
+                  className="glass rounded-xl px-6 py-3.5 text-center font-semibold text-fg transition-colors hover:text-white"
+                >
+                  Получить демо-анализ звонков
+                </Link>
+              </div>
             </div>
           </div>
         </Reveal>
+      </section>
+
+      {/* --- Инструменты --- */}
+      <section className="pb-24 pt-8 sm:pb-32">
+        <Marquee items={tools} />
       </section>
     </>
   );
