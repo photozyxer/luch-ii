@@ -1,3 +1,5 @@
+import { rateLimit } from "@/lib/ratelimit";
+
 const topics: Record<string, string> = {
   tender: "Приглашение в тендер",
   calls: "Разбор 50 звонков",
@@ -19,24 +21,9 @@ const LIMITS = {
 const MAX_FILES = 10;
 const MAX_FILES_BYTES = 4.5 * 1024 * 1024; // лимит тела Vercel
 
-/* ── примитивный rate-limit по IP: N заявок в окно на тёплый инстанс ── */
+/* ── rate-limit по IP: N заявок в окно (см. lib/ratelimit — durable через Redis) ── */
 const RATE_WINDOW_MS = 10 * 60 * 1000;
 const RATE_MAX = 5;
-const hits = new Map<string, number[]>();
-
-function rateLimited(ip: string): boolean {
-  const now = Date.now();
-  const arr = (hits.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
-  if (arr.length >= RATE_MAX) {
-    hits.set(ip, arr);
-    return true;
-  }
-  arr.push(now);
-  hits.set(ip, arr);
-  // не даём Map расти бесконечно
-  if (hits.size > 5000) hits.clear();
-  return false;
-}
 
 const cut = (v: FormDataEntryValue | null, max: number) =>
   String(v ?? "")
@@ -57,7 +44,14 @@ export async function POST(req: Request) {
     req.headers.get("x-real-ip")?.trim() ||
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     "unknown";
-  if (rateLimited(ip)) {
+  // budget не нужен: форма не тратит деньги на LLM, только шлёт в Telegram
+  const limit = await rateLimit({
+    ip,
+    tag: "lead",
+    max: RATE_MAX,
+    windowMs: RATE_WINDOW_MS,
+  });
+  if (!limit.ok) {
     return Response.json({ error: "too many requests" }, { status: 429 });
   }
 

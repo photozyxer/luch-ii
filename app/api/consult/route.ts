@@ -1,5 +1,6 @@
 import { SYSTEM_PROMPT } from "@/lib/consultant-kb";
 import { llmFetch } from "@/lib/llm";
+import { rateLimit } from "@/lib/ratelimit";
 
 /**
  * Чат ИИ-консультанта (демо агента «Консультант ЖК»).
@@ -15,20 +16,6 @@ const MAX_MSG_CHARS = 600; // длина одной реплики
 const MAX_TOKENS = 700;
 const RATE_WINDOW_MS = 10 * 60 * 1000;
 const RATE_MAX = 25; // сообщений с одного IP в окно
-const hits = new Map<string, number[]>();
-
-function rateLimited(ip: string): boolean {
-  const now = Date.now();
-  const arr = (hits.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
-  if (arr.length >= RATE_MAX) {
-    hits.set(ip, arr);
-    return true;
-  }
-  arr.push(now);
-  hits.set(ip, arr);
-  if (hits.size > 5000) hits.clear();
-  return false;
-}
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -96,8 +83,18 @@ export async function POST(req: Request) {
     req.headers.get("x-real-ip")?.trim() ||
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     "unknown";
-  if (rateLimited(ip)) {
-    return Response.json({ error: "too many requests" }, { status: 429 });
+  const limit = await rateLimit({
+    ip,
+    tag: "consult",
+    max: RATE_MAX,
+    windowMs: RATE_WINDOW_MS,
+    budget: true, // тратит деньги на LLM → под дневным потолком
+  });
+  if (!limit.ok) {
+    // budget: глобальный дневной потолок исчерпан → 503; ip: перебор с IP → 429
+    return limit.reason === "budget"
+      ? Response.json({ error: "temporarily unavailable" }, { status: 503 })
+      : Response.json({ error: "too many requests" }, { status: 429 });
   }
 
   let body: unknown;
