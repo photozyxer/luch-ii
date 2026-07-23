@@ -97,8 +97,7 @@ export default function Hero() {
           >
             ЛУЧ — собственная ИИ-система для застройщика: автоматическое
             управление performance- и бренд-рекламой, SMM, продажами и
-            BI-аналитикой. Не отчёты, а конкретные действия к плану — на
-            базе 15 лет практики в недвижимости.
+            BI-аналитикой. Не отчёты, а конкретные действия к плану.
           </p>
 
           <div data-hero className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -118,8 +117,14 @@ export default function Hero() {
 
           <dl
             data-hero
-            className="mt-14 grid max-w-2xl grid-cols-3 gap-6 border-t border-line/60 pt-6"
+            className="mt-14 grid max-w-3xl grid-cols-2 gap-6 border-t border-line/60 pt-6 sm:grid-cols-4"
           >
+            <div>
+              <dt className="text-xs text-muted">в маркетинге недвижимости</dt>
+              <dd className="mt-1 whitespace-nowrap font-display text-xl font-semibold sm:text-3xl">
+                <Stat value={15} suffix=" лет" />
+              </dd>
+            </div>
             <div>
               <dt className="text-xs text-muted">самый долгий контракт</dt>
               <dd className="mt-1 whitespace-nowrap font-display text-xl font-semibold sm:text-3xl">
