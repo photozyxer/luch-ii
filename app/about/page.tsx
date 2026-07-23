@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Link from "next/link";
 import PageIntro from "@/components/page-intro";
 import Reveal from "@/components/reveal";
 import GlowCard from "@/components/glow-card";
 
-export const metadata: Metadata = {
-  title: "О нас — ЛУЧ-ИИ",
+export const metadata = pageMeta({
+  title: "О нас",
   description:
     "Команда performance-маркетинга в недвижимости, которая построила собственную ИИ-систему ЛУЧ. Принципы работы и для кого мы.",
-};
+  path: "/about",
+});
 
 const principles = [
   {

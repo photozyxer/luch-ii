@@ -1,12 +1,13 @@
-import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import PageIntro from "@/components/page-intro";
 import DashboardApp from "@/components/dashboard-app";
 
-export const metadata: Metadata = {
-  title: "Дашборд ЛУЧ — командный центр застройщика | демо",
+export const metadata = pageMeta({
+  title: "Дашборд ЛУЧ — командный центр застройщика (демо)",
   description:
-    "Интерактивный командный центр: сквозная воронка от показов до выручки, KPI план-факт, графики по каналам, воронко-based прогноз и слой рекомендаций «что делать». Демо на синтетических данных на порядках застройщика.",
-};
+    "Интерактивный дашборд застройщика: сквозная воронка показы→выручка, KPI план-факт, графики по каналам и слой рекомендаций «что делать». Демо на синтетике.",
+  path: "/dashboard",
+});
 
 export default function DashboardPage() {
   return (

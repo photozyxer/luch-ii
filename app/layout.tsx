@@ -21,9 +21,74 @@ const manrope = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "ЛУЧ-ИИ — performance-агентство недвижимости на собственном ИИ",
+  metadataBase: new URL("https://luch-ii.ru"),
+  title: {
+    default: "ЛУЧ-ИИ — performance-агентство для застройщиков + ИИ-система",
+    template: "%s — ЛУЧ-ИИ",
+  },
   description:
-    "Ведём рекламу, звонки, аналитику и продажи застройщика через собственную ИИ-систему ЛУЧ. Показываем не цифры, а что они значат — и что делать сейчас.",
+    "Реклама, звонки, аналитика и продажи застройщика в одной ИИ-системе ЛУЧ: 7 модулей — от голосового приёма звонков до план-факта. Показываем, что делать сейчас.",
+  applicationName: "ЛУЧ-ИИ",
+  authors: [{ name: "ЛУЧ-ИИ" }],
+  keywords: [
+    "маркетинг для застройщика",
+    "ИИ для недвижимости",
+    "анализ звонков отдела продаж",
+    "сквозная аналитика застройщик",
+    "performance-агентство недвижимость",
+    "голосовой ИИ приём звонков",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "ЛУЧ-ИИ",
+    locale: "ru_RU",
+    url: "/",
+    title: "ЛУЧ-ИИ — performance-агентство для застройщиков + ИИ-система",
+    description:
+      "7 ИИ-модулей ЛУЧ ведут рекламу, звонки, аналитику и продажи застройщика — и говорят, что делать сейчас.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ЛУЧ-ИИ — ИИ-система для маркетинга и продаж застройщика",
+    description:
+      "7 модулей: голосовой приём звонков, анализ звонков, перформанс, SMM, продакшн, консультант, аналитика с план-фактом.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
+};
+
+// JSON-LD: организация и сайт — для сущностного графа и AI-поиска
+const orgJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://luch-ii.ru/#org",
+      name: "ЛУЧ-ИИ",
+      url: "https://luch-ii.ru",
+      description:
+        "Performance-агентство для застройщиков с собственной ИИ-системой ЛУЧ из 7 модулей: реклама, звонки, аналитика, SMM, продакшн, консультант, приём звонков.",
+      areaServed: "RU",
+      knowsAbout: [
+        "performance-маркетинг в недвижимости",
+        "сквозная аналитика застройщика",
+        "ИИ-анализ звонков",
+        "голосовой ИИ приём входящих",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://luch-ii.ru/#website",
+      name: "ЛУЧ-ИИ",
+      url: "https://luch-ii.ru",
+      inLanguage: "ru-RU",
+      publisher: { "@id": "https://luch-ii.ru/#org" },
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -35,6 +100,10 @@ export default function RootLayout({
       className={`${unbounded.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
         <SmoothScroll>
           <Nav />
           <main className="flex-1">{children}</main>

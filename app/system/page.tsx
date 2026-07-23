@@ -1,15 +1,16 @@
-import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Link from "next/link";
 import PageIntro from "@/components/page-intro";
 import Reveal from "@/components/reveal";
 import GlowCard from "@/components/glow-card";
 import Marquee from "@/components/marquee";
 
-export const metadata: Metadata = {
-  title: "ИИ-модули ЛУЧ — собственная ИИ-система для застройщика",
+export const metadata = pageMeta({
+  title: "7 ИИ-модулей для маркетинга и продаж застройщика",
   description:
-    "Семь ИИ-модулей ЛУЧ по вертикалям маркетинга и продаж застройщика: приём звонков голосом, анализ звонков, аналитика, перформанс, SMM, продакшн, консультант ЖК. Один дашборд. Человек утверждает решения.",
-};
+    "Семь модулей ЛУЧ по вертикалям застройщика: голосовой приём звонков, анализ звонков, аналитика, перформанс, SMM, продакшн, консультант. Один дашборд, решения — за человеком.",
+  path: "/system",
+});
 
 type Agent = {
   id: string;
@@ -196,9 +197,46 @@ const integrations = [
   "ДомКлик",
 ];
 
+const systemJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "ИИ-система ЛУЧ для застройщика",
+  serviceType: "ИИ-автоматизация маркетинга и продаж застройщика",
+  url: "https://luch-ii.ru/system",
+  areaServed: "RU",
+  provider: {
+    "@type": "Organization",
+    name: "ЛУЧ-ИИ",
+    url: "https://luch-ii.ru",
+  },
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "ИИ-модули ЛУЧ",
+    itemListElement: [
+      ...agents.map((a) => ({
+        "@type": "Offer",
+        itemOffered: { "@type": "Service", name: a.name, description: a.pitch },
+      })),
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "ЛУЧ-Дашборд",
+          description:
+            "Командный центр: все модули в одном экране, план-факт и рекомендации что делать.",
+        },
+      },
+    ],
+  },
+};
+
 export default function SystemPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(systemJsonLd) }}
+      />
       <PageIntro
         kicker="ИИ-система ЛУЧ"
         color="var(--c-violet)"

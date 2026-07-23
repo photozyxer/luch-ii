@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Link from "next/link";
 import PageIntro from "@/components/page-intro";
 import Reveal from "@/components/reveal";
 import SmmApp from "@/components/smm-app";
 
-export const metadata: Metadata = {
-  title: "SMM-модуль ЛУЧ — карусели и посты в стиле ЖК | демо",
+export const metadata = pageMeta({
+  title: "SMM-модуль ЛУЧ — карусели и посты в стиле ЖК (демо)",
   description:
-    "Живое демо модуля ЛУЧ-SMM: скаут трендовых механик, генерация каруселей и постов в фирменном стиле конкретного ЖК на реальных фото, экспорт макетов и контур эффективности пост → метрики → следующая итерация.",
-};
+    "Живое демо модуля ЛУЧ-SMM: генерация каруселей и постов в фирменном стиле ЖК на реальных фото, экспорт макетов и контур эффективности пост → метрики → итерация.",
+  path: "/smm",
+});
 
 export default function SmmPage() {
   return (

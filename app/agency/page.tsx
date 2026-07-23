@@ -1,15 +1,16 @@
-import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Link from "next/link";
 import PageIntro from "@/components/page-intro";
 import Reveal from "@/components/reveal";
 import GlowCard from "@/components/glow-card";
 import Marquee from "@/components/marquee";
 
-export const metadata: Metadata = {
-  title: "Услуги агентства — ЛУЧ-ИИ",
+export const metadata = pageMeta({
+  title: "Услуги performance-агентства для застройщиков",
   description:
     "Performance, SMM, продакшн, аналитика и стратегия для застройщиков. Руками команды, на скорости ИИ. Отвечаем обращениями и сделками, а не часами.",
-};
+  path: "/agency",
+});
 
 const services = [
   {

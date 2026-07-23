@@ -1,15 +1,16 @@
-import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Link from "next/link";
 import PageIntro from "@/components/page-intro";
 import Reveal from "@/components/reveal";
 import GlowCard from "@/components/glow-card";
 import Stat from "@/components/stat";
 
-export const metadata: Metadata = {
-  title: "Кейсы — ЛУЧ-ИИ",
+export const metadata = pageMeta({
+  title: "Кейсы в недвижимости — цифры под NDA",
   description:
     "Кейсы performance-продвижения недвижимости: жилые комплексы и загородные посёлки. Цифры вместо имён — названия проектов под NDA.",
-};
+  path: "/cases",
+});
 
 type Case = {
   segment: string;

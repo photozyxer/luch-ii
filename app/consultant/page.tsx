@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Link from "next/link";
 import PageIntro from "@/components/page-intro";
 import Reveal from "@/components/reveal";
 import ConsultantChat from "@/components/consultant-chat";
 
-export const metadata: Metadata = {
-  title: "ИИ-консультант ЖК — живое демо | ЛУЧ",
+export const metadata = pageMeta({
+  title: "ИИ-консультант ЖК — живое демо",
   description:
-    "Живое демо модуля ЛУЧ-Консультант: чат-консультант реального жилого дома отвечает на вопросы о квартирах, ценах и акциях, отрабатывает возражения, предлагает альтернативы и закрывает на встречу.",
-};
+    "Живое демо модуля ЛУЧ-Консультант: чат отвечает о квартирах, ценах и акциях реального ЖК, отрабатывает возражения, предлагает альтернативы и закрывает на встречу.",
+  path: "/consultant",
+});
 
 const features = [
   {
