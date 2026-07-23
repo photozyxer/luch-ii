@@ -72,7 +72,15 @@ export default function ConsultantPage() {
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-muted">
                 Обучим ЛУЧ-Консультант на ваших лотах, ценах и регламентах, подключим к
-                сайту и CRM. Запуск — от двух недель.
+                сайту и CRM. Запуск — от двух недель. Нужен тот же ассистент
+                голосом на входящих звонках — это{" "}
+                <Link
+                  href="/system#operator"
+                  className="text-fg underline decoration-line underline-offset-2 hover:decoration-fg"
+                >
+                  ЛУЧ-Оператор
+                </Link>
+                .
               </p>
               <Link
                 href="/contacts?topic=module"
