@@ -72,15 +72,6 @@ export default async function ContactsPage({
                   </li>
                 </ol>
               </div>
-              <div className="hairline rounded-2xl p-6">
-                <p className="font-display font-semibold">Почта</p>
-                <a
-                  href="mailto:photozyx@gmail.com"
-                  className="mt-2 inline-block text-sm text-muted transition-colors hover:text-fg"
-                >
-                  photozyx@gmail.com
-                </a>
-              </div>
             </div>
           </div>
         </Reveal>

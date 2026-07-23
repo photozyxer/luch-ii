@@ -55,6 +55,12 @@ export default function Footer() {
             Бесплатный разбор 50 звонков →
           </Link>
           <p className="mt-6 text-sm text-muted">© {new Date().getFullYear()} ЛУЧ-ИИ</p>
+          <Link
+            href="/privacy"
+            className="mt-1 inline-block text-sm text-muted transition-colors hover:text-fg"
+          >
+            Политика обработки персональных данных
+          </Link>
         </div>
       </div>
     </footer>

@@ -135,9 +135,26 @@ export default function LeadForm({
           Не отправилось — попробуйте ещё раз через минуту.
         </p>
       )}
-      <p className="text-xs text-muted">
-        Нажимая «Отправить», вы соглашаетесь на обработку персональных данных.
-      </p>
+      <label className="flex cursor-pointer items-start gap-2.5 text-xs leading-relaxed text-muted">
+        <input
+          type="checkbox"
+          name="consent"
+          required
+          className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-indigo"
+        />
+        <span>
+          Я согласен на обработку моих персональных данных в соответствии с{" "}
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-fg underline decoration-line underline-offset-2 hover:decoration-fg"
+          >
+            Политикой обработки персональных данных
+          </a>
+          .
+        </span>
+      </label>
     </form>
   );
 }
