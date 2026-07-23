@@ -51,8 +51,12 @@ export async function POST(req: Request) {
     return Response.json({ error: "not configured" }, { status: 500 });
   }
 
+  // x-real-ip выставляет платформа (Vercel) и клиент его не подделает;
+  // x-forwarded-for — запасной, но его левый IP клиент может спуфить в обход лимита
   const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    req.headers.get("x-real-ip")?.trim() ||
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "unknown";
   if (rateLimited(ip)) {
     return Response.json({ error: "too many requests" }, { status: 429 });
   }
