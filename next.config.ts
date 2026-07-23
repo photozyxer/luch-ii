@@ -15,6 +15,17 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
+  // канонический адрес — https://luch-ii.ru; www перебрасываем на без-www
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.luch-ii.ru" }],
+        destination: "https://luch-ii.ru/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
