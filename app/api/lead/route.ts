@@ -1,3 +1,5 @@
+import { sendLeadMail } from "@/lib/mailer";
+import { tgPing } from "@/lib/notify";
 import { rateLimit } from "@/lib/ratelimit";
 
 const topics: Record<string, string> = {
@@ -8,18 +10,16 @@ const topics: Record<string, string> = {
   consult: "Консультация",
 };
 
-const TG_API = "https://api.telegram.org";
-
-/* ── лимиты полей: Telegram sendMessage ≤ 4096 символов, держим запас ── */
+/* ── лимиты полей: держим тело письма в разумных рамках ── */
 const LIMITS = {
   phone: 40,
-  name: 120,
   email: 120,
+  org: 160, // компания или ЖК
   task: 1500,
   key: 40, // topic / module
 };
 const MAX_FILES = 10;
-const MAX_FILES_BYTES = 4.5 * 1024 * 1024; // лимит тела Vercel
+const MAX_FILES_BYTES = 15 * 1024 * 1024; // разумный потолок для вложений письма
 
 /* ── rate-limit по IP: N заявок в окно (см. lib/ratelimit — durable через Redis) ── */
 const RATE_WINDOW_MS = 10 * 60 * 1000;
@@ -31,20 +31,13 @@ const cut = (v: FormDataEntryValue | null, max: number) =>
     .slice(0, max);
 
 export async function POST(req: Request) {
-  const token = process.env.TG_BOT_TOKEN;
-  const chatId = process.env.TG_CHAT_ID;
-  if (!token || !chatId) {
-    console.error("lead: TG_BOT_TOKEN / TG_CHAT_ID are not configured");
-    return Response.json({ error: "not configured" }, { status: 500 });
-  }
-
-  // x-real-ip выставляет платформа (Vercel) и клиент его не подделает;
+  // x-real-ip выставляет платформа/прокси и клиент его не подделает;
   // x-forwarded-for — запасной, но его левый IP клиент может спуфить в обход лимита
   const ip =
     req.headers.get("x-real-ip")?.trim() ||
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     "unknown";
-  // budget не нужен: форма не тратит деньги на LLM, только шлёт в Telegram
+  // budget не нужен: форма не тратит деньги на LLM, только шлёт письмо
   const limit = await rateLimit({
     ip,
     tag: "lead",
@@ -74,11 +67,13 @@ export async function POST(req: Request) {
     return Response.json({ error: "phone required" }, { status: 400 });
   }
 
-  const name = cut(form.get("name"), LIMITS.name);
+  // имя не собираем — минимизация ПД (152-ФЗ). Вместо него — компания/ЖК (не ПД).
+  const org = cut(form.get("org"), LIMITS.org);
   const email = cut(form.get("email"), LIMITS.email);
   const task = cut(form.get("task"), LIMITS.task);
   const topic = cut(form.get("topic"), LIMITS.key);
   const mod = cut(form.get("module"), LIMITS.key);
+  const topicLabel = topics[topic] ?? "Заявка с сайта";
 
   // файлы валидируем на сервере: клиентский лимит обходится прямым POST
   const files = form
@@ -90,44 +85,54 @@ export async function POST(req: Request) {
     return Response.json({ error: "files too large" }, { status: 413 });
   }
 
+  const receivedAt = new Date().toLocaleString("ru-RU", {
+    timeZone: "Asia/Yekaterinburg",
+  });
+
+  // ── полное письмо с ПД — на РФ-ящик ──
   const text = [
     "🌈 Новая заявка — сайт ЛУЧ-ИИ",
-    `Тема: ${topics[topic] ?? "Заявка с сайта"}${mod ? ` · модуль ${mod}` : ""}`,
+    `Тема: ${topicLabel}${mod ? ` · модуль ${mod}` : ""}`,
     `Телефон: ${phone}`,
-    name ? `Имя: ${name}` : null,
+    org ? `Компания/ЖК: ${org}` : null,
     email ? `Email: ${email}` : null,
     task ? `\nЗадача / ссылка на звонки:\n${task}` : null,
-    files.length ? `\nЗаписей приложено: ${files.length} (следом)` : null,
-    `\nПолучено: ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Yekaterinburg" })}`,
+    files.length ? `\nЗаписей приложено: ${files.length}` : null,
+    `\nПолучено: ${receivedAt}`,
   ]
     .filter(Boolean)
     .join("\n");
 
-  const msgRes = await fetch(`${TG_API}/bot${token}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text }),
+  // записи звонков — вложениями в письмо
+  const attachments = await Promise.all(
+    files.map(async (f) => ({
+      filename: f.name.slice(0, 120) || "запись",
+      content: Buffer.from(await f.arrayBuffer()),
+    })),
+  );
+
+  const sent = await sendLeadMail({
+    subject: `Заявка ЛУЧ-ИИ · ${topicLabel}`,
+    text,
+    attachments,
   });
 
-  if (!msgRes.ok) {
-    console.error("telegram sendMessage failed", msgRes.status, await msgRes.text());
-    return Response.json({ error: "telegram notify failed" }, { status: 500 });
+  if (!sent) {
+    return Response.json({ error: "mail failed" }, { status: 500 });
   }
 
-  // записи звонков — отдельными документами; их провал заявку не роняет
-  for (const f of files) {
-    const fd = new FormData();
-    fd.append("chat_id", String(chatId));
-    fd.append("document", f, f.name.slice(0, 120));
-    fd.append("caption", `Запись от ${name || phone}`);
-    const docRes = await fetch(`${TG_API}/bot${token}/sendDocument`, {
-      method: "POST",
-      body: fd,
-    });
-    if (!docRes.ok) {
-      console.error("telegram sendDocument failed", docRes.status, await docRes.text());
-    }
-  }
+  // ── пинг в Telegram БЕЗ ПД (тема и компания/ЖК — не персональные данные) ──
+  await tgPing(
+    [
+      "🌈 Новая заявка — сайт ЛУЧ-ИИ",
+      `Тема: ${topicLabel}${mod ? ` · модуль ${mod}` : ""}`,
+      org ? `Компания/ЖК: ${org}` : null,
+      "📬 Детали и телефон — на почте.",
+      `Получено: ${receivedAt}`,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  );
 
   return Response.json({ ok: true });
 }

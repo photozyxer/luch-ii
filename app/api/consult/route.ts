@@ -1,14 +1,19 @@
 import { SYSTEM_PROMPT } from "@/lib/consultant-kb";
 import { llmFetch } from "@/lib/llm";
+import { sendLeadMail } from "@/lib/mailer";
+import { tgPing } from "@/lib/notify";
 import { rateLimit } from "@/lib/ratelimit";
 
 /**
  * Чат ИИ-консультанта (демо агента «Консультант ЖК»).
  * Проксирует диалог в LLM (DeepSeek → OpenAI, см. lib/llm.ts) со стримингом;
- * если клиент оставил телефон — передаёт лид с историей диалога в Telegram.
+ * если клиент оставил телефон — передаёт лид с историей диалога на РФ-почту,
+ * а в Telegram шлёт только пинг без ПД.
+ *
+ * ПД в чате: перед отправкой в LLM телефоны/email в репликах маскируются, чтобы
+ * персональные данные не уходили на зарубежный сервер модели (152-ФЗ). Исходный
+ * текст используется только для извлечения телефона в лид (на РФ-почту).
  */
-
-const TG_API = "https://api.telegram.org";
 
 /* ── лимиты: публичный LLM-эндпоинт тратит реальные деньги ── */
 const MAX_MESSAGES = 30; // реплик в истории на запрос
@@ -37,47 +42,52 @@ function sanitize(raw: unknown): Msg[] | null {
 }
 
 /** Телефон в свободном тексте: ≥10 цифр подряд с учётом разделителей. */
+const PHONE_RE =
+  /(?:\+7|8|7)?[\s(-]*\d{3}[\s)-]*\d{3}[\s-]*\d{2}[\s-]*\d{2}/;
+const EMAIL_RE = /[^\s@]+@[^\s@]+\.[^\s@]+/g;
+
 function findPhone(text: string): string | null {
-  const m = text.match(/(?:\+7|8|7)?[\s(-]*\d{3}[\s)-]*\d{3}[\s-]*\d{2}[\s-]*\d{2}/);
+  const m = text.match(PHONE_RE);
   if (!m) return null;
   const digits = m[0].replace(/\D/g, "");
   return digits.length >= 10 ? m[0].trim() : null;
 }
 
-/** Лид в Telegram — провал отправки не роняет чат. */
+/** Маскировка ПД (телефоны/email) в тексте перед отправкой в LLM. */
+function redactPII(text: string): string {
+  return text
+    .replace(new RegExp(PHONE_RE, "g"), "[телефон]")
+    .replace(EMAIL_RE, "[email]");
+}
+
+/** Лид на РФ-почту + пинг в Telegram без ПД. Провал не роняет чат. */
 async function notifyLead(phone: string, history: Msg[]) {
-  const token = process.env.TG_BOT_TOKEN;
-  const chatId = process.env.TG_CHAT_ID;
-  if (!token || !chatId) {
-    console.error("consult: TG_BOT_TOKEN / TG_CHAT_ID are not configured");
-    return;
-  }
   const dialog = history
     .slice(-12)
     .map((m) => `${m.role === "user" ? "👤" : "🤖"} ${m.content}`)
     .join("\n")
     .slice(0, 3000);
-  const text = [
-    "💬 Лид из чат-консультанта (ЖК «Притяжение», демо)",
-    `Телефон: ${phone}`,
-    `\nДиалог:\n${dialog}`,
-    `\nПолучено: ${new Date().toLocaleString("ru-RU", { timeZone: "Asia/Yekaterinburg" })}`,
-  ].join("\n");
-  try {
-    const res = await fetch(`${TG_API}/bot${token}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text }),
-    });
-    if (!res.ok)
-      console.error("consult: telegram failed", res.status, await res.text());
-  } catch (e) {
-    console.error("consult: telegram error", e);
-  }
+  const receivedAt = new Date().toLocaleString("ru-RU", {
+    timeZone: "Asia/Yekaterinburg",
+  });
+  // полный лид с ПД — на РФ-ящик
+  await sendLeadMail({
+    subject: "Лид из чат-консультанта ЛУЧ-ИИ (демо)",
+    text: [
+      "💬 Лид из чат-консультанта (ЖК «Притяжение», демо)",
+      `Телефон: ${phone}`,
+      `\nДиалог:\n${dialog}`,
+      `\nПолучено: ${receivedAt}`,
+    ].join("\n"),
+  });
+  // пинг без ПД
+  await tgPing(
+    `💬 Новый лид из чат-консультанта (демо)\n📬 Телефон и диалог — на почте.\nПолучено: ${receivedAt}`,
+  );
 }
 
 export async function POST(req: Request) {
-  // x-real-ip выставляет платформа (Vercel) и клиент его не подделает;
+  // x-real-ip выставляет платформа/прокси и клиент его не подделает;
   // x-forwarded-for — запасной, но его левый IP клиент может спуфить в обход лимита
   const ip =
     req.headers.get("x-real-ip")?.trim() ||
@@ -108,15 +118,21 @@ export async function POST(req: Request) {
     return Response.json({ error: "bad request" }, { status: 400 });
   }
 
-  // клиент оставил телефон в последней реплике → лид в Telegram (не блокируем ответ)
+  // клиент оставил телефон в последней реплике → лид на РФ-почту (не блокируем ответ)
   const phone = findPhone(messages[messages.length - 1].content);
   const leadPromise = phone ? notifyLead(phone, messages) : null;
+
+  // ПД в репликах маскируем перед отправкой в LLM (зарубежный сервер модели)
+  const llmMessages = messages.map((m) => ({
+    role: m.role,
+    content: redactPII(m.content),
+  }));
 
   const upstream = await llmFetch("consult", {
     stream: true,
     max_tokens: MAX_TOKENS,
     temperature: 0.7,
-    messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
+    messages: [{ role: "system", content: SYSTEM_PROMPT }, ...llmMessages],
   });
 
   if (!upstream) {

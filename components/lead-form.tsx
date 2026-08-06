@@ -88,7 +88,12 @@ export default function LeadForm({
         className={field}
       />
       <div className="grid gap-4 sm:grid-cols-2">
-        <input name="name" maxLength={120} placeholder="Имя" className={field} />
+        <input
+          name="org"
+          maxLength={160}
+          placeholder="Компания или ЖК"
+          className={field}
+        />
         <input name="email" type="email" maxLength={120} placeholder="Email" className={field} />
       </div>
       <textarea

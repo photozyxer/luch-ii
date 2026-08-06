@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 // Content-Security-Policy: прагматичная политика под Next App Router.
 // script/style — 'unsafe-inline' (Next инлайнит бутстрап-скрипты и стили без
@@ -38,8 +39,23 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // самодостаточная сборка для Docker/Timeweb: .next/standalone/server.js
+  // тянет только нужные файлы, node_modules ставить в рантайме не нужно
+  output: "standalone",
+  // проект — подпапка в git-репозитории wiki (выше есть свои lock-файлы), поэтому
+  // явно фиксируем корень трассировки на папке luch, иначе standalone уезжает
+  // в .next/standalone/luch/ и Dockerfile не находит server.js
+  outputFileTracingRoot: path.resolve(),
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      // стриминг чат-консультанта: отключаем буферизацию на прокси Timeweb/nginx,
+      // иначе ответ придёт целиком в конце, а не по мере генерации (см. self-hosting)
+      {
+        source: "/api/consult",
+        headers: [{ key: "X-Accel-Buffering", value: "no" }],
+      },
+    ];
   },
   // канонический адрес — https://luch-ii.ru; www перебрасываем на без-www
   async redirects() {
