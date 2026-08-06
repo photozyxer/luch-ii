@@ -37,5 +37,9 @@ COPY --from=builder /app/public ./public
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
-ENV HOSTNAME=0.0.0.0
-CMD ["node", "server.js"]
+# HOSTNAME форсируем прямо в команде запуска, а не через ENV: платформы вроде
+# Timeweb инжектят в контейнер свой HOSTNAME (= ID контейнера), он перебивает
+# ENV, и Next слушает служебный адрес вместо 0.0.0.0 → healthcheck не проходит
+# («собралось, запустилось, но статус навсегда starting»). Инлайн-присваивание
+# в CMD перебивает подставленное платформой значение — слушаем все интерфейсы.
+CMD ["sh", "-c", "HOSTNAME=0.0.0.0 node server.js"]
