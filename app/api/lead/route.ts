@@ -1,5 +1,4 @@
-import { sendLeadMail } from "@/lib/mailer";
-import { tgPing } from "@/lib/notify";
+import { tgSend, tgSendDocument } from "@/lib/notify";
 import { rateLimit } from "@/lib/ratelimit";
 
 const topics: Record<string, string> = {
@@ -89,7 +88,8 @@ export async function POST(req: Request) {
     timeZone: "Asia/Yekaterinburg",
   });
 
-  // ── полное письмо с ПД — на РФ-ящик ──
+  // ── заявка уходит в Telegram-бота (SMTP на Timeweb заблокирован) ──
+  // Имя не собираем; телефон без ФИО персональных данных не образует.
   const text = [
     "🌈 Новая заявка — сайт ЛУЧ-ИИ",
     `Тема: ${topicLabel}${mod ? ` · модуль ${mod}` : ""}`,
@@ -103,36 +103,21 @@ export async function POST(req: Request) {
     .filter(Boolean)
     .join("\n");
 
-  // записи звонков — вложениями в письмо
-  const attachments = await Promise.all(
-    files.map(async (f) => ({
-      filename: f.name.slice(0, 120) || "запись",
-      content: Buffer.from(await f.arrayBuffer()),
-    })),
-  );
-
-  const sent = await sendLeadMail({
-    subject: `Заявка ЛУЧ-ИИ · ${topicLabel}`,
-    text,
-    attachments,
-  });
-
+  const sent = await tgSend(text);
   if (!sent) {
-    return Response.json({ error: "mail failed" }, { status: 500 });
+    return Response.json({ error: "notify failed" }, { status: 500 });
   }
 
-  // ── пинг в Telegram БЕЗ ПД (тема и компания/ЖК — не персональные данные) ──
-  await tgPing(
-    [
-      "🌈 Новая заявка — сайт ЛУЧ-ИИ",
-      `Тема: ${topicLabel}${mod ? ` · модуль ${mod}` : ""}`,
-      org ? `Компания/ЖК: ${org}` : null,
-      "📬 Детали и телефон — на почте.",
-      `Получено: ${receivedAt}`,
-    ]
-      .filter(Boolean)
-      .join("\n"),
-  );
+  // записи звонков — отдельными документами в тот же чат (не блокируем ответ)
+  await Promise.all(
+    files.map(async (f) =>
+      tgSendDocument(
+        f.name.slice(0, 120) || "запись",
+        Buffer.from(await f.arrayBuffer()),
+        `Запись к заявке · ${topicLabel}`,
+      ),
+    ),
+  ).catch(() => {});
 
   return Response.json({ ok: true });
 }

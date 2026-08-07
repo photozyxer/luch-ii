@@ -1,18 +1,16 @@
 import { SYSTEM_PROMPT } from "@/lib/consultant-kb";
 import { llmFetch } from "@/lib/llm";
-import { sendLeadMail } from "@/lib/mailer";
-import { tgPing } from "@/lib/notify";
+import { tgSend } from "@/lib/notify";
 import { rateLimit } from "@/lib/ratelimit";
 
 /**
  * Чат ИИ-консультанта (демо агента «Консультант ЖК»).
  * Проксирует диалог в LLM (DeepSeek → OpenAI, см. lib/llm.ts) со стримингом;
- * если клиент оставил телефон — передаёт лид с историей диалога на РФ-почту,
- * а в Telegram шлёт только пинг без ПД.
+ * если клиент оставил телефон — передаёт лид с историей диалога в Telegram-бота.
  *
- * ПД в чате: перед отправкой в LLM телефоны/email в репликах маскируются, чтобы
- * персональные данные не уходили на зарубежный сервер модели (152-ФЗ). Исходный
- * текст используется только для извлечения телефона в лид (на РФ-почту).
+ * Перед отправкой в LLM телефоны/email в репликах маскируются, чтобы не уходили
+ * на зарубежный сервер модели. Исходный текст используется только для извлечения
+ * телефона в лид (в Telegram-бота менеджеру).
  */
 
 /* ── лимиты: публичный LLM-эндпоинт тратит реальные деньги ── */
@@ -60,7 +58,7 @@ function redactPII(text: string): string {
     .replace(EMAIL_RE, "[email]");
 }
 
-/** Лид на РФ-почту + пинг в Telegram без ПД. Провал не роняет чат. */
+/** Лид из чата в Telegram-бота (SMTP на Timeweb заблокирован). Провал не роняет чат. */
 async function notifyLead(phone: string, history: Msg[]) {
   const dialog = history
     .slice(-12)
@@ -70,19 +68,13 @@ async function notifyLead(phone: string, history: Msg[]) {
   const receivedAt = new Date().toLocaleString("ru-RU", {
     timeZone: "Asia/Yekaterinburg",
   });
-  // полный лид с ПД — на РФ-ящик
-  await sendLeadMail({
-    subject: "Лид из чат-консультанта ЛУЧ-ИИ (демо)",
-    text: [
+  await tgSend(
+    [
       "💬 Лид из чат-консультанта (ЖК «Притяжение», демо)",
       `Телефон: ${phone}`,
       `\nДиалог:\n${dialog}`,
       `\nПолучено: ${receivedAt}`,
     ].join("\n"),
-  });
-  // пинг без ПД
-  await tgPing(
-    `💬 Новый лид из чат-консультанта (демо)\n📬 Телефон и диалог — на почте.\nПолучено: ${receivedAt}`,
   );
 }
 
