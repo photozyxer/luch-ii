@@ -6,13 +6,15 @@ import path from "node:path";
 // nonce-middleware); connect только на свой origin (клиент ходит лишь на /api);
 // img — data:/blob: для превью html-to-image; frame-ancestors 'none' закрывает
 // кликджекинг во всех современных браузерах; object/base/form-action заперты.
+// mc.yandex.ru — Яндекс.Метрика (tag.js, пиксели, отправка хитов, вебвизор).
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://mc.yandex.ru",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: https://mc.yandex.ru",
   "font-src 'self'",
-  "connect-src 'self'",
+  "connect-src 'self' https://mc.yandex.ru",
+  "frame-src 'self' https://mc.yandex.ru",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

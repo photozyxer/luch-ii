@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import localFont from "next/font/local";
 import "./globals.css";
 import SmoothScroll from "@/components/smooth-scroll";
 import Nav from "@/components/nav";
 import Footer from "@/components/footer";
+
+// Яндекс.Метрика (счётчик 111388370). Инлайн через next/script со стратегией
+// afterInteractive — грузится один раз на всех роутах, очередь ym() ловит
+// первый просмотр. Домен mc.yandex.ru разрешён в CSP (см. next.config.ts).
+const YM_ID = 111388370;
+const yandexMetrika = `(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=${YM_ID}', 'ym');ym(${YM_ID}, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});`;
 
 // self-hosted вариативные шрифты: без запросов к Google Fonts (надёжно из РФ)
 const unbounded = localFont({
@@ -100,6 +107,20 @@ export default function RootLayout({
       className={`${unbounded.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <Script
+          id="yandex-metrika"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{ __html: yandexMetrika }}
+        />
+        <noscript>
+          <div>
+            <img
+              src={`https://mc.yandex.ru/watch/${YM_ID}`}
+              style={{ position: "absolute", left: "-9999px" }}
+              alt=""
+            />
+          </div>
+        </noscript>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
