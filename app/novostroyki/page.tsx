@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { pageMeta } from "@/lib/seo";
 import PageIntro from "@/components/page-intro";
 import Reveal from "@/components/reveal";
 import NovostroykiChat from "@/components/novostroyki-chat";
+import { overallStats, listDistricts, listDevelopers, listZk, fmtMillions, fmtPrice } from "@/lib/novostroyki/catalog";
 
 export const metadata = pageMeta({
   title: "Новостройки Екатеринбурга — ИИ-подбор квартиры",
@@ -30,6 +32,11 @@ const features = [
 ];
 
 export default function NovostroykiPage() {
+  const stats = overallStats();
+  const districts = listDistricts();
+  const developers = listDevelopers();
+  const zk = listZk();
+
   return (
     <>
       <PageIntro
@@ -41,7 +48,7 @@ export default function NovostroykiPage() {
             <span className="text-spectrum">новостройках Екатеринбурга</span>
           </>
         }
-        lead="Опишите, что ищете — район, бюджет, число комнат, срок сдачи — и ИИ-консультант подберёт конкретные квартиры из базы всех застройщиков: с ценами, планировками, акциями и ипотекой."
+        lead={`${stats.lots} квартир в ${stats.zk} ЖК от ${stats.developers} застройщиков, цены от ${fmtMillions(stats.minPrice)}. Опишите, что ищете — район, бюджет, число комнат, срок сдачи — и ИИ-консультант подберёт конкретные квартиры с ценами, планировками, акциями и ипотекой.`}
       />
 
       <section className="relative pb-24">
@@ -66,6 +73,41 @@ export default function NovostroykiPage() {
               </div>
             ))}
           </Reveal>
+        </div>
+      </section>
+
+      {/* навигация-перелинковка: хаб → все спицы */}
+      <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
+        <div className="flex flex-wrap gap-3">
+          <Link href="/novostroyki/akcii" className="glass rounded-xl px-5 py-3 text-sm font-semibold transition-colors hover:border-white/25">🏷 Акции и скидки</Link>
+          <Link href="/novostroyki/ipoteka" className="glass rounded-xl px-5 py-3 text-sm font-semibold transition-colors hover:border-white/25">🏦 Ипотека и рассрочка</Link>
+        </div>
+
+        <h2 className="mt-12 font-display text-lg font-semibold">Новостройки по районам Екатеринбурга</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {districts.map((d) => (
+            <Link key={d.slug} href={`/novostroyki/rayon/${d.slug}`} className="rounded-full border border-white/12 px-3.5 py-1.5 text-xs text-muted transition-colors hover:border-white/25 hover:text-fg">
+              {d.name} · {d.lots}
+            </Link>
+          ))}
+        </div>
+
+        <h2 className="mt-10 font-display text-lg font-semibold">Застройщики</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {developers.map((d) => (
+            <Link key={d.slug} href={`/novostroyki/zastroyshchik/${d.slug}`} className="rounded-full border border-white/12 px-3.5 py-1.5 text-xs text-muted transition-colors hover:border-white/25 hover:text-fg">
+              {d.name} · {d.lots}
+            </Link>
+          ))}
+        </div>
+
+        <h2 className="mt-10 font-display text-lg font-semibold">Жилые комплексы ({zk.length})</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {zk.map((z) => (
+            <Link key={z.slug} href={`/novostroyki/zhk/${z.slug}`} className="rounded-full border border-white/12 px-3.5 py-1.5 text-xs text-muted transition-colors hover:border-white/25 hover:text-fg">
+              {z.name} · от {fmtPrice(z.minPrice)}
+            </Link>
+          ))}
         </div>
       </section>
     </>
