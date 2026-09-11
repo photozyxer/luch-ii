@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getZk, listZk, slugify, fmtMillions, fmtPrice, roomsLabel } from "@/lib/novostroyki/catalog";
 import NovostroykiLotCard from "@/components/novostroyki-lot-card";
+import NovostroykiLeadForm from "@/components/novostroyki-lead-form";
 
 export const dynamicParams = false;
 
@@ -79,6 +80,10 @@ export default async function ZkPage({ params }: { params: Promise<{ slug: strin
       <section className="mt-10">
         <h2 className="font-display text-lg font-semibold">Квартиры в ЖК {z.name}</h2>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">{z.sampleLots.map((l) => <NovostroykiLotCard key={l.id} l={l} />)}</div>
+      </section>
+
+      <section className="mt-10">
+        <NovostroykiLeadForm context={`ЖК ${z.name}`} title={`Заявка на квартиру в ЖК ${z.name}`} />
       </section>
 
       <section className="mt-10">

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getDistrict, listDistricts, fmtMillions, fmtPrice, roomsLabel } from "@/lib/novostroyki/catalog";
 import NovostroykiLotCard from "@/components/novostroyki-lot-card";
+import NovostroykiLeadForm from "@/components/novostroyki-lead-form";
 
 export const dynamicParams = false; // только известные районы; прочее → 404
 
@@ -111,6 +112,11 @@ export default async function DistrictPage({ params }: { params: Promise<{ slug:
       <section className="mt-10">
         <h2 className="font-display text-lg font-semibold">Застройщики в районе {d.name}</h2>
         <p className="mt-2 text-sm text-muted">{d.developers.map((x) => `${x.developer} (${x.lots})`).join(" · ")}</p>
+      </section>
+
+      {/* лид-форма */}
+      <section className="mt-10">
+        <NovostroykiLeadForm context={`Район ${d.name}`} title={`Подберём квартиру в ${d.name} — оставьте номер`} />
       </section>
 
       {/* FAQ */}

@@ -28,8 +28,16 @@ export type LimitOpts = {
   budget?: boolean; // учитывать в дневном бюджете LLM (для платных эндпоинтов)
 };
 
-/** Дневной потолок запросов к LLM на весь сайт. Переопределяется env. */
-const DAILY_CAP = Number(process.env.LLM_DAILY_CAP) || 800;
+/**
+ * Дневной потолок запросов к LLM — СВОЙ на каждый тег (модуль), чтобы модули не
+ * ели бюджет друг друга. Переопределяется env LLM_DAILY_CAP_<TAG> (напр.
+ * LLM_DAILY_CAP_NOVOSTROYKI=1500), иначе общий LLM_DAILY_CAP, иначе 800.
+ */
+const DEFAULT_DAILY_CAP = Number(process.env.LLM_DAILY_CAP) || 800;
+function dailyCap(tag: string): number {
+  const v = Number(process.env[`LLM_DAILY_CAP_${tag.toUpperCase()}`]);
+  return Number.isFinite(v) && v > 0 ? v : DEFAULT_DAILY_CAP;
+}
 const BUDGET_TTL_S = 48 * 60 * 60; // ключ дня живёт 48ч (с запасом на часовые пояса)
 
 /* ── клиент Redis: строим один раз, null если не настроен ── */
@@ -60,18 +68,17 @@ async function durable(redis: Redis, o: LimitOpts): Promise<LimitResult> {
 
   if (o.budget) {
     const day = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
-    const dayKey = `llm:day:${day}`;
+    const dayKey = `llm:day:${o.tag}:${day}`; // свой счётчик на тег
     const dayCount = await redis.incr(dayKey);
     if (dayCount === 1) await redis.expire(dayKey, BUDGET_TTL_S);
-    if (dayCount > DAILY_CAP) return { ok: false, reason: "budget" };
+    if (dayCount > dailyCap(o.tag)) return { ok: false, reason: "budget" };
   }
   return { ok: true };
 }
 
 /* ── in-memory fallback: per-IP скользящее окно + per-инстанс дневной бюджет ── */
 const hits = new Map<string, number[]>();
-let memDay = "";
-let memBudget = 0;
+const memBudget = new Map<string, number>(); // "tag:day" → счётчик
 
 function memory(o: LimitOpts): LimitResult {
   const now = Date.now();
@@ -87,12 +94,12 @@ function memory(o: LimitOpts): LimitResult {
 
   if (o.budget) {
     const day = new Date().toISOString().slice(0, 10);
-    if (day !== memDay) {
-      memDay = day;
-      memBudget = 0;
-    }
-    memBudget += 1;
-    if (memBudget > DAILY_CAP) return { ok: false, reason: "budget" };
+    const k = `${o.tag}:${day}`;
+    const c = (memBudget.get(k) ?? 0) + 1;
+    memBudget.set(k, c);
+    // чистим счётчики прошлых дней, чтобы Map не рос
+    if (memBudget.size > 50) for (const key of memBudget.keys()) if (!key.endsWith(day)) memBudget.delete(key);
+    if (c > dailyCap(o.tag)) return { ok: false, reason: "budget" };
   }
   return { ok: true };
 }

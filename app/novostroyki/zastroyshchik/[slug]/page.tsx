@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getDeveloper, listDevelopers, fmtMillions, fmtPrice, roomsLabel } from "@/lib/novostroyki/catalog";
 import NovostroykiLotCard from "@/components/novostroyki-lot-card";
+import NovostroykiLeadForm from "@/components/novostroyki-lead-form";
 
 export const dynamicParams = false;
 
@@ -73,6 +74,10 @@ export default async function DeveloperPage({ params }: { params: Promise<{ slug
       <section className="mt-10">
         <h2 className="font-display text-lg font-semibold">Примеры квартир от {d.name}</h2>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">{d.sampleLots.map((l) => <NovostroykiLotCard key={l.id} l={l} />)}</div>
+      </section>
+
+      <section className="mt-10">
+        <NovostroykiLeadForm context={`Застройщик ${d.name}`} title={`Квартиры от ${d.name} — оставьте номер, подберём`} />
       </section>
 
       <section className="mt-10">
