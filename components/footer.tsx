@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const nav = [
   { href: "/agency", label: "Услуги агентства" },
@@ -12,6 +15,8 @@ const nav = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/novostroyki")) return null; // на новостройках — свой футер
   return (
     <footer className="border-t border-line/60 py-14">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 md:grid-cols-3">

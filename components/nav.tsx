@@ -26,6 +26,8 @@ export default function Nav() {
 
   useEffect(() => setOpen(false), [pathname]);
 
+  if (pathname?.startsWith("/novostroyki")) return null; // на новостройках — своя шапка
+
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${

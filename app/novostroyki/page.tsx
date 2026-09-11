@@ -83,7 +83,7 @@ export default function NovostroykiPage() {
           <Link href="/novostroyki/ipoteka" className="glass rounded-xl px-5 py-3 text-sm font-semibold transition-colors hover:border-white/25">🏦 Ипотека и рассрочка</Link>
         </div>
 
-        <h2 className="mt-12 font-display text-lg font-semibold">Новостройки по районам Екатеринбурга</h2>
+        <h2 id="rayony" className="mt-12 scroll-mt-20 font-display text-lg font-semibold">Новостройки по районам Екатеринбурга</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           {districts.map((d) => (
             <Link key={d.slug} href={`/novostroyki/rayon/${d.slug}`} className="rounded-full border border-white/12 px-3.5 py-1.5 text-xs text-muted transition-colors hover:border-white/25 hover:text-fg">
@@ -92,7 +92,7 @@ export default function NovostroykiPage() {
           ))}
         </div>
 
-        <h2 className="mt-10 font-display text-lg font-semibold">Застройщики</h2>
+        <h2 id="zastroyshchiki" className="mt-10 scroll-mt-20 font-display text-lg font-semibold">Застройщики</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           {developers.map((d) => (
             <Link key={d.slug} href={`/novostroyki/zastroyshchik/${d.slug}`} className="rounded-full border border-white/12 px-3.5 py-1.5 text-xs text-muted transition-colors hover:border-white/25 hover:text-fg">
