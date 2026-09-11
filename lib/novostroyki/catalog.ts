@@ -25,7 +25,9 @@ const n = (v: unknown): number | null => (v == null || v === "" ? null : Number(
 
 type RawZk = { id: string; name: string; developer: string | null; district: string | null; klass: string | null; deadline: string | null; address: string | null; description: string | null };
 type RawLot = { id: string; zk_id: string; rooms: unknown; area: unknown; floor: unknown; floors_total: unknown; price: unknown; price_base: unknown; finishing: string | null; plan_url: string | null; deadline: string | null; building: string | null; status: string; source_url: string | null };
-type Seed = { tables: { zk: RawZk[]; lot: RawLot[]; promo: unknown[]; mortgage: unknown[] } };
+type RawPromo = { developer: string; zk_name: string | null; title: string; description: string | null; discount_pct: unknown; valid_until: string | null };
+type RawMortgage = { developer: string; program: string; rate: unknown; min_downpayment_pct: unknown; term_years: unknown; note: string | null };
+type Seed = { tables: { zk: RawZk[]; lot: RawLot[]; promo: RawPromo[]; mortgage: RawMortgage[] } };
 
 export type LotCard = {
   id: string; zk: string; zk_id: string; developer: string | null; district: string | null;
@@ -137,6 +139,29 @@ export function getZk(slug: string) {
     ...brief, maxPrice: max(ls.map((x) => x.price)), address: z?.address ?? null, deadline: z?.deadline ?? null,
     klass: z?.klass ?? null, description: z?.description ?? null, byRooms: byRooms(ls), sampleLots: showcase(ls, 8),
   };
+}
+
+/* ─── Акции ─── */
+export type Promo = { developer: string; zkName: string | null; title: string; description: string | null; discountPct: number | null; validUntil: string | null };
+
+export function listPromos(): Promo[] {
+  return S.tables.promo
+    .map((p) => ({ developer: p.developer, zkName: p.zk_name, title: p.title, description: p.description, discountPct: n(p.discount_pct), validUntil: p.valid_until }))
+    .sort((a, b) => (b.discountPct ?? -1) - (a.discountPct ?? -1));
+}
+
+/** Лоты с реальной скидкой (price_base > price) — для витрины на странице акций. */
+export function discountedLots(limit = 8): LotCard[] {
+  return showcase(LOTS.filter((l) => l.discount != null), limit);
+}
+
+/* ─── Ипотека ─── */
+export type Mortgage = { developer: string; program: string; rate: number | null; minDownpaymentPct: number | null; termYears: number | null; note: string | null };
+
+export function listMortgage(): Mortgage[] {
+  return S.tables.mortgage
+    .map((m) => ({ developer: m.developer, program: m.program, rate: n(m.rate), minDownpaymentPct: n(m.min_downpayment_pct), termYears: n(m.term_years), note: m.note }))
+    .sort((a, b) => (a.rate ?? 999) - (b.rate ?? 999));
 }
 
 /* ─── Форматирование ─── */
