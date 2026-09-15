@@ -4,11 +4,41 @@
  * выборку. Токен-бюджет диалога не зависит от размера базы.
  *
  * Порт ядра ЕКБ-консультанта на сайт: search_lots + get_offers + capture_lead.
- * Отличие от источника: capture_lead шлёт лид ТОЛЬКО в Telegram (durable-канал),
- * без таблицы lead (in-memory БД её не переживает).
+ * Данные — из seed.json на ЧИСТОМ JS (как lib/novostroyki/catalog.ts), БЕЗ PGlite:
+ * PGlite (WASM) не инициализируется в прод-сборке Next standalone
+ * («TypeError: f.instantiateWasm is not a function»). capture_lead шлёт лид ТОЛЬКО
+ * в Telegram (durable-канал), таблицы lead нет.
  */
-import { getDb } from "./db";
+import seed from "./seed.json";
 import { tgSend } from "@/lib/notify";
+
+/* ── данные из seed (строятся один раз на модуль) ── */
+const num = (v: unknown): number | null => (v == null || v === "" ? null : Number(v));
+
+type RawZk = { id: string; name: string; developer: string | null; district: string | null; klass: string | null; metro: string | null; deadline: string | null };
+type RawLot = { id: string; zk_id: string; rooms: unknown; area: unknown; floor: unknown; floors_total: unknown; price: unknown; price_base: unknown; finishing: string | null; plan_url: string | null; deadline: string | null; building: string | null; status: string; source_url: string | null };
+type RawPromo = { developer: string; zk_name: string | null; title: string; description: string | null; discount_pct: unknown; valid_until: string | null };
+type RawMortgage = { developer: string; program: string; rate: unknown; min_downpayment_pct: unknown; term_years: unknown; note: string | null };
+type SeedShape = { tables: { zk: RawZk[]; lot: RawLot[]; promo: RawPromo[]; mortgage: RawMortgage[] } };
+
+const S = seed as unknown as SeedShape;
+const ZK = new Map(S.tables.zk.map((z) => [z.id, z]));
+
+/** Доступные лоты, обогащённые полями ЖК — в форме Lot (см. ниже). */
+const ALL_LOTS: Lot[] = S.tables.lot
+  .filter((l) => (l.status ?? "available") === "available")
+  .map((l) => {
+    const z = ZK.get(l.zk_id);
+    const price = num(l.price), base = num(l.price_base);
+    return {
+      id: l.id, zk_id: l.zk_id, zk: z?.name ?? l.zk_id, developer: z?.developer ?? null,
+      district: z?.district ?? null, klass: z?.klass ?? null, metro: z?.metro ?? null,
+      deadline: l.deadline ?? z?.deadline ?? null, building: l.building ?? null,
+      rooms: num(l.rooms), area: num(l.area), floor: num(l.floor), floors_total: num(l.floors_total),
+      price, price_base: base, discount: base && price && base > price ? base - price : null,
+      finishing: l.finishing ?? null, plan_url: l.plan_url ?? null, source_url: l.source_url ?? null,
+    };
+  });
 
 /* ─── Схемы инструментов для LLM (function-calling) ─── */
 
@@ -137,58 +167,34 @@ function districtSynonyms(query: string): string[] {
   return [...out];
 }
 
-export async function searchLots(args: SearchArgs): Promise<Lot[]> {
-  const db = await getDb();
-  const where: string[] = ["l.status = 'available'"];
-  const params: unknown[] = [];
-  const p = (v: unknown) => (params.push(v), `$${params.length}`);
+const ilike = (hay: string | null, needle: string) => (hay ?? "").toLowerCase().includes(needle.toLowerCase());
 
-  if (Array.isArray(args.rooms) && args.rooms.length) where.push(`l.rooms = any(${p(args.rooms)}::int[])`);
-  if (typeof args.price_min === "number") where.push(`l.price >= ${p(args.price_min)}`);
-  if (typeof args.price_max === "number") where.push(`l.price <= ${p(args.price_max)}`);
-  if (typeof args.area_min === "number") where.push(`l.area >= ${p(args.area_min)}`);
-  if (typeof args.area_max === "number") where.push(`l.area <= ${p(args.area_max)}`);
-  if (typeof args.floor_min === "number") where.push(`l.floor >= ${p(args.floor_min)}`);
-  if (typeof args.floor_max === "number") where.push(`l.floor <= ${p(args.floor_max)}`);
-  if (args.district) {
-    const clauses = [`z.district ilike ${p("%" + args.district + "%")}`];
-    for (const d of districtSynonyms(args.district)) clauses.push(`z.district = ${p(d)}`);
-    where.push(`(${clauses.join(" or ")})`);
-  }
-  if (args.developer) where.push(`z.developer ilike ${p("%" + args.developer + "%")}`);
-  if (args.zk_name) where.push(`z.name ilike ${p("%" + args.zk_name + "%")}`);
-  if (args.deadline) where.push(`coalesce(l.deadline, z.deadline) ilike ${p("%" + args.deadline + "%")}`);
-  if (args.finishing) where.push(`l.finishing ilike ${p("%" + args.finishing + "%")}`);
-  if (args.only_discount) where.push(`l.price_base is not null and l.price_base > l.price`);
+export async function searchLots(args: SearchArgs): Promise<Lot[]> {
+  // район: подстрока ИЛИ синоним/админ-район (как было в SQL: ilike OR district=synonym)
+  const syns = args.district ? districtSynonyms(args.district) : [];
+
+  const out = ALL_LOTS.filter((l) => {
+    if (Array.isArray(args.rooms) && args.rooms.length && !(l.rooms != null && args.rooms.includes(l.rooms))) return false;
+    if (typeof args.price_min === "number" && !(l.price != null && l.price >= args.price_min)) return false;
+    if (typeof args.price_max === "number" && !(l.price != null && l.price <= args.price_max)) return false;
+    if (typeof args.area_min === "number" && !(l.area != null && l.area >= args.area_min)) return false;
+    if (typeof args.area_max === "number" && !(l.area != null && l.area <= args.area_max)) return false;
+    if (typeof args.floor_min === "number" && !(l.floor != null && l.floor >= args.floor_min)) return false;
+    if (typeof args.floor_max === "number" && !(l.floor != null && l.floor <= args.floor_max)) return false;
+    if (args.district && !(ilike(l.district, args.district) || (l.district != null && syns.includes(l.district)))) return false;
+    if (args.developer && !ilike(l.developer, args.developer)) return false;
+    if (args.zk_name && !ilike(l.zk, args.zk_name)) return false;
+    if (args.deadline && !ilike(l.deadline, args.deadline)) return false;
+    if (args.finishing && !ilike(l.finishing, args.finishing)) return false;
+    if (args.only_discount && l.discount == null) return false;
+    return true;
+  });
+
+  // сортировка: сначала со скидкой, затем дешевле
+  out.sort((a, b) => (Number(!!b.discount) - Number(!!a.discount)) || ((a.price ?? Infinity) - (b.price ?? Infinity)));
 
   const limit = Math.min(Math.max(Number(args.limit) || 8, 1), 15);
-
-  const sql = `
-    select l.id, l.zk_id, z.name as zk, z.developer, z.district, z.klass, z.metro,
-           coalesce(l.deadline, z.deadline) as deadline, l.building,
-           l.rooms, l.area, l.floor, l.floors_total, l.price, l.price_base,
-           l.finishing, l.plan_url, l.source_url
-    from lot l join zk z on z.id = l.zk_id
-    where ${where.join(" and ")}
-    order by (l.price_base is not null and l.price_base > l.price) desc, l.price asc
-    limit ${limit}`;
-
-  const res = await db.query<Record<string, unknown>>(sql, params);
-  return res.rows.map((r) => {
-    const price = r.price == null ? null : Number(r.price);
-    const base = r.price_base == null ? null : Number(r.price_base);
-    return {
-      id: String(r.id), zk_id: String(r.zk_id), zk: String(r.zk),
-      developer: (r.developer as string) ?? null, district: (r.district as string) ?? null,
-      klass: (r.klass as string) ?? null, metro: (r.metro as string) ?? null,
-      deadline: (r.deadline as string) ?? null, building: (r.building as string) ?? null,
-      rooms: r.rooms == null ? null : Number(r.rooms), area: r.area == null ? null : Number(r.area),
-      floor: r.floor == null ? null : Number(r.floor), floors_total: r.floors_total == null ? null : Number(r.floors_total),
-      price, price_base: base, discount: base && price && base > price ? base - price : null,
-      finishing: (r.finishing as string) ?? null, plan_url: (r.plan_url as string) ?? null,
-      source_url: (r.source_url as string) ?? null,
-    };
-  });
+  return out.slice(0, limit);
 }
 
 /* ─── get_offers (акции + ипотека) ─── */
@@ -197,33 +203,25 @@ export type Promo = { developer: string; zk_name: string | null; title: string; 
 export type Mortgage = { developer: string; program: string; rate: number | null; min_downpayment_pct: number | null; term_years: number | null; note: string | null };
 
 export async function getOffers(args: { developer?: string; kind?: "promos" | "mortgage" | "all" }): Promise<{ promos: Promo[]; mortgage: Mortgage[] }> {
-  const db = await getDb();
   const kind = args.kind ?? "all";
-  const devFilter = args.developer ? "where developer ilike $1" : "";
-  const p = args.developer ? [`%${args.developer}%`] : [];
+  const devMatch = (dev: string) => !args.developer || ilike(dev, args.developer);
 
   let promos: Promo[] = [];
   let mortgage: Mortgage[] = [];
 
   if (kind === "promos" || kind === "all") {
-    const r = await db.query<Record<string, unknown>>(
-      `select developer, zk_name, title, description, discount_pct, valid_until from promo ${devFilter} order by discount_pct desc nulls last limit 20`, p,
-    );
-    promos = r.rows.map((x) => ({
-      developer: String(x.developer), zk_name: (x.zk_name as string) ?? null, title: String(x.title),
-      description: (x.description as string) ?? null, discount_pct: x.discount_pct == null ? null : Number(x.discount_pct),
-      valid_until: (x.valid_until as string) ?? null,
-    }));
+    promos = S.tables.promo
+      .filter((x) => devMatch(x.developer))
+      .map((x) => ({ developer: x.developer, zk_name: x.zk_name, title: x.title, description: x.description, discount_pct: num(x.discount_pct), valid_until: x.valid_until }))
+      .sort((a, b) => (b.discount_pct ?? -1) - (a.discount_pct ?? -1))
+      .slice(0, 20);
   }
   if (kind === "mortgage" || kind === "all") {
-    const r = await db.query<Record<string, unknown>>(
-      `select developer, program, rate, min_downpayment_pct, term_years, note from mortgage ${devFilter} order by rate asc nulls last limit 20`, p,
-    );
-    mortgage = r.rows.map((x) => ({
-      developer: String(x.developer), program: String(x.program), rate: x.rate == null ? null : Number(x.rate),
-      min_downpayment_pct: x.min_downpayment_pct == null ? null : Number(x.min_downpayment_pct),
-      term_years: x.term_years == null ? null : Number(x.term_years), note: (x.note as string) ?? null,
-    }));
+    mortgage = S.tables.mortgage
+      .filter((x) => devMatch(x.developer))
+      .map((x) => ({ developer: x.developer, program: x.program, rate: num(x.rate), min_downpayment_pct: num(x.min_downpayment_pct), term_years: num(x.term_years), note: x.note }))
+      .sort((a, b) => (a.rate ?? 999) - (b.rate ?? 999))
+      .slice(0, 20);
   }
   return { promos, mortgage };
 }
