@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Ипотека на новостройки Екатеринбурга — ставки, программы, рассрочка застройщиков",
   description:
     "Ипотека на новостройки Екатеринбурга: семейная, ИТ, господдержка, субсидированные программы застройщиков, рассрочка. Ставки, первый взнос, срок. Рассчитаем платёж с ИИ-консультантом.",
-  alternates: { canonical: "/novostroyki/ipoteka" },
+  alternates: { canonical: "/ipoteka" },
 };
 
 const rate = (r: number | null) => (r == null ? "—" : `${String(r).replace(".", ",")}%`);

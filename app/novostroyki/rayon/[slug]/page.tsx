@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!d) return {};
   const title = `Новостройки в районе ${d.name} (Екатеринбург) — ${d.lots} квартир от ${fmtMillions(d.minPrice)}`;
   const description = `Купить квартиру в новостройке в районе ${d.name}, Екатеринбург: ${d.lots} квартир в продаже от ${d.developers.length} застройщиков, цены от ${fmtMillions(d.minPrice)}. Планировки, сроки сдачи, отделка, акции и ипотека — подбор с ИИ-консультантом.`;
-  return { title, description, alternates: { canonical: `/novostroyki/rayon/${slug}` } };
+  return { title, description, alternates: { canonical: `/rayon/${slug}` } };
 }
 
 const plural = (n: number, one: string, few: string, many: string) => {

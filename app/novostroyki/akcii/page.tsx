@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "Акции и скидки на новостройки Екатеринбурга — актуальные предложения застройщиков",
   description:
     "Актуальные акции, скидки и рассрочка на новостройки Екатеринбурга от застройщиков: квартиры со скидкой, спецпредложения, условия покупки. Подбор выгодных вариантов с ИИ-консультантом.",
-  alternates: { canonical: "/novostroyki/akcii" },
+  alternates: { canonical: "/akcii" },
 };
 
 export default async function AkciiPage() {

@@ -1,13 +1,13 @@
 import type { MetadataRoute } from "next";
 import { listDistricts, listDevelopers, listZk } from "@/lib/novostroyki/catalog";
+import { NOVOSTROYKI_BASE } from "@/lib/novostroyki/config";
 
 /**
- * Sitemap раздела новостроек. Отдельный от корневого — на поддомене
- * novostroyki-ekb.luch-ii.ru станет самостоятельным. Базу/пути обновить при
- * переезде на поддомен (брик 5); до подключения поддомена в Вебмастер не сдаём.
+ * Sitemap раздела новостроек — самостоятельный, на поддомене отдаётся как
+ * /sitemap.xml (middleware rewrite'ит /sitemap.xml → /novostroyki/sitemap.xml).
+ * URL — чистые (корень поддомена), совпадают с canonical страниц.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = "https://luch-ii.ru/novostroyki";
   const now = new Date();
   const urls: { path: string; priority: number }[] = [
     { path: "", priority: 1 },
@@ -18,7 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...listZk().map((z) => ({ path: `/zhk/${z.slug}`, priority: 0.7 })),
   ];
   return urls.map((u) => ({
-    url: `${base}${u.path}`,
+    url: `${NOVOSTROYKI_BASE}${u.path}`,
     lastModified: now,
     changeFrequency: "weekly",
     priority: u.priority,

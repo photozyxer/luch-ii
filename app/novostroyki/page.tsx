@@ -1,16 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { pageMeta } from "@/lib/seo";
 import PageIntro from "@/components/page-intro";
 import Reveal from "@/components/reveal";
 import NovostroykiChat from "@/components/novostroyki-chat";
 import { overallStats, listDistricts, listDevelopers, listZk, fmtMillions, fmtPrice } from "@/lib/novostroyki/catalog";
 
-export const metadata = pageMeta({
-  title: "Новостройки Екатеринбурга — ИИ-подбор квартиры",
+// title без суффикса — шаблон секции (app/novostroyki/layout.tsx) добавит бренд.
+// canonical "/" = корень поддомена (metadataBase из layout секции).
+export const metadata: Metadata = {
+  title: { absolute: "Новостройки Екатеринбурга — ИИ-подбор квартиры от всех застройщиков" },
   description:
     "Подберём квартиру в новостройках Екатеринбурга: все ЖК от застройщиков, цены, планировки, сроки сдачи, отделка, акции и ипотека. ИИ-консультант отвечает фактами из базы.",
-  path: "/novostroyki",
-});
+  alternates: { canonical: "/" },
+};
 
 const features = [
   {

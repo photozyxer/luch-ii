@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: `Новостройки застройщика ${d.name} в Екатеринбурге — ${d.lots} квартир от ${fmtMillions(d.minPrice)}`,
     description: `Квартиры в новостройках от застройщика ${d.name}, Екатеринбург: ${d.lots} квартир в ${d.zk} ЖК от ${fmtMillions(d.minPrice)}. Планировки, сроки сдачи, отделка, акции и ипотека — подбор с ИИ-консультантом.`,
-    alternates: { canonical: `/novostroyki/zastroyshchik/${slug}` },
+    alternates: { canonical: `/zastroyshchik/${slug}` },
   };
 }
 

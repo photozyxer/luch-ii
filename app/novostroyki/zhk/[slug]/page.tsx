@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: `ЖК ${z.name} (Екатеринбург) — ${z.lots} квартир от ${fmtMillions(z.minPrice)}, цены и планировки`,
     description: `ЖК ${z.name}${z.developer ? ` от ${z.developer}` : ""}${z.district ? `, район ${z.district}` : ""}: ${z.lots} квартир в продаже от ${fmtMillions(z.minPrice)}. Планировки, цены, срок сдачи по корпусам, отделка, акции. Подбор с ИИ-консультантом.`,
-    alternates: { canonical: `/novostroyki/zhk/${slug}` },
+    alternates: { canonical: `/zhk/${slug}` },
   };
 }
 
