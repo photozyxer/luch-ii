@@ -11,7 +11,7 @@ export default function NovostroykiLotCard({ l }: { l: Lot }) {
     >
       {l.plan_url && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={l.plan_url} alt={`Планировка ${roomsLabel(l.rooms)} в ЖК ${l.zk}`} className="h-24 w-24 shrink-0 rounded-lg bg-white/5 object-contain" loading="lazy" />
+        <img src={l.plan_url} alt={`Планировка ${roomsLabel(l.rooms)} в ЖК ${l.zk}`} className="h-24 w-24 shrink-0 rounded-lg bg-white object-contain p-1" loading="lazy" />
       )}
       <div className="min-w-0 flex-1 text-sm">
         <p className="font-semibold">

@@ -40,7 +40,7 @@ function LotCard({ l }: { l: Lot }) {
     >
       {l.plan_url && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={l.plan_url} alt="Планировка" className="h-20 w-20 shrink-0 rounded-lg bg-white/5 object-contain" loading="lazy" />
+        <img src={l.plan_url} alt="Планировка" className="h-20 w-20 shrink-0 rounded-lg bg-white object-contain p-1" loading="lazy" />
       )}
       <div className="min-w-0 flex-1 text-sm">
         <p className="font-semibold">
