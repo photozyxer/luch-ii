@@ -94,7 +94,7 @@ export const TOOL_SCHEMAS = [
       parameters: {
         type: "object",
         properties: {
-          developer: { type: "string", description: "Застройщик (подстрока): Атлас, PRINZIP, ТЭН. Пусто = все." },
+          developer: { type: "string", description: "Застройщик (подстрока), напр. «Брусника», «Атлас», «PRINZIP». Пусто = все застройщики." },
           kind: { type: "string", enum: ["promos", "mortgage", "all"], description: "Что вернуть (по умолч. all)." },
         },
       },
