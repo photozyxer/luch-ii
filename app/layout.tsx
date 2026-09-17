@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import localFont from "next/font/local";
+import { headers } from "next/headers";
 import "./globals.css";
 import SmoothScroll from "@/components/smooth-scroll";
 import Nav from "@/components/nav";
 import Footer from "@/components/footer";
+import { NOVOSTROYKI_HOST } from "@/lib/novostroyki/config";
 
 // Яндекс.Метрика (счётчик 111388370). Инлайн через next/script со стратегией
 // afterInteractive — грузится один раз на всех роутах, очередь ym() ловит
@@ -98,9 +100,14 @@ const orgJsonLd = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // На поддомене новостроек агентский хедер/футер НЕ рендерим (у секции свой хром,
+  // app/novostroyki/layout.tsx). Определяем по хосту серверно — без мигания.
+  // На осн. домене luch-ii.ru Nav/Footer сами прячутся на /novostroyki (usePathname).
+  const host = (await headers()).get("host")?.split(":")[0] ?? "";
+  const isNovostroykiHost = host === NOVOSTROYKI_HOST;
   return (
     <html
       lang="ru"
@@ -126,9 +133,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
         <SmoothScroll>
-          <Nav />
+          {!isNovostroykiHost && <Nav />}
           <main className="flex-1">{children}</main>
-          <Footer />
+          {!isNovostroykiHost && <Footer />}
         </SmoothScroll>
       </body>
     </html>
