@@ -1,6 +1,6 @@
 import { SYSTEM_PROMPT } from "@/lib/consultant-kb";
 import { llmFetch } from "@/lib/llm";
-import { tgSend } from "@/lib/notify";
+import { pachcaSend } from "@/lib/notify";
 import { rateLimit } from "@/lib/ratelimit";
 
 /**
@@ -68,7 +68,8 @@ async function notifyLead(phone: string, history: Msg[]) {
   const receivedAt = new Date().toLocaleString("ru-RU", {
     timeZone: "Asia/Yekaterinburg",
   });
-  await tgSend(
+  await pachcaSend(
+    "agency",
     [
       "💬 Лид из чат-консультанта (ЖК «Притяжение», демо)",
       `Телефон: ${phone}`,

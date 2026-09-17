@@ -10,7 +10,7 @@
  * в Telegram (durable-канал), таблицы lead нет.
  */
 import seed from "./seed.json";
-import { tgSend } from "@/lib/notify";
+import { pachcaSend } from "@/lib/notify";
 
 /* ── данные из seed (строятся один раз на модуль) ── */
 const num = (v: unknown): number | null => (v == null || v === "" ? null : Number(v));
@@ -241,7 +241,8 @@ export async function captureLead(
 ): Promise<{ ok: boolean; ask_phone?: boolean }> {
   if (!ctx.phone) return { ok: false, ask_phone: true };
   const offer = args.offer_type ?? "other";
-  const sent = await tgSend(
+  const sent = await pachcaSend(
+    "novostroyki",
     [
       "🏙 Лид — новостройки Екатеринбурга",
       `Телефон: ${ctx.phone}`,

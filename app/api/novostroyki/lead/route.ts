@@ -3,7 +3,7 @@
  * владельца) + необязательный контекст (что смотрел клиент), шлёт менеджеру в
  * Telegram. Не тратит LLM → без дневного бюджета, только per-IP лимит.
  */
-import { tgSend } from "@/lib/notify";
+import { pachcaSend } from "@/lib/notify";
 import { rateLimit } from "@/lib/ratelimit";
 
 const RATE_WINDOW_MS = 10 * 60 * 1000;
@@ -34,7 +34,8 @@ export async function POST(req: Request) {
   }
   const context = String(b.context ?? "").trim().slice(0, 200);
 
-  const sent = await tgSend(
+  const sent = await pachcaSend(
+    "novostroyki",
     ["🏙 Заявка — новостройки Екатеринбурга", `Телефон: ${phone}`, context ? `Контекст: ${context}` : ""]
       .filter(Boolean)
       .join("\n"),

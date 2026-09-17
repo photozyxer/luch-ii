@@ -1,75 +1,63 @@
 /**
- * Транспорт заявок в Telegram-бота.
+ * Транспорт заявок в мессенджер.
  *
- * После переезда на РФ-хостинг (Timeweb App Platform) исходящий SMTP заблокирован
- * платформой (порты 25/465/587/2525 закрыты), поэтому заявки уходят менеджеру в
- * Telegram-бота. Персональных данных мы не собираем: имя в формах убрано, остаётся
- * только номер телефона (сам по себе, без ФИО, не образует ПД конкретного лица).
+ * Telegram заблокирован из ДЦ Timeweb (сетевой блок контейнера — TCP:443 к
+ * api.telegram.org даёт TIMEOUT и по IPv4, и по IPv6; DeepSeek с того же хоста
+ * жив). Поэтому заявки уходят во входящие webhook Пачки (РФ-инфраструктура,
+ * достижима с Timeweb). Два канала — заявки не смешиваются:
+ *   - PACHCA_WEBHOOK_NOVOSTROYKI — чат заявок новостроек ЕКБ
+ *   - PACHCA_WEBHOOK_AGENCY      — чат заявок агентства (сайт ЛУЧ + консультант)
  *
- * Конфиг через env: TG_BOT_TOKEN, TG_CHAT_ID. Если не заданы — тихо пропускаем.
+ * Входящий webhook принимает {"message": "..."} и публикует текст как есть
+ * (markdown поддерживается, лимит ~40 000 байт). Персональных данных не
+ * собираем: только телефон (без ФИО не образует ПД конкретного лица).
+ *
+ * Если webhook канала не задан в env — тихо пропускаем и логируем (не роняем
+ * вызывающий роут).
+ *
+ * ВНИМАНИЕ: входящий webhook умеет только текст. Файлы (записи звонков в
+ * app/api/lead) через него не отправить — для транзита файлов нужен REST API
+ * Пачки (токен + chat_id). Пока файлы не пересылаются, в тексте лида остаётся
+ * счётчик приложенных записей.
  */
 
-const TG_API = "https://api.telegram.org";
+export type LeadChannel = "novostroyki" | "agency";
 
-function creds(): { token: string; chatId: string } | null {
-  const token = process.env.TG_BOT_TOKEN;
-  const chatId = process.env.TG_CHAT_ID;
-  if (!token || !chatId) return null;
-  return { token, chatId };
+function webhookUrl(channel: LeadChannel): string | null {
+  const raw =
+    channel === "novostroyki"
+      ? process.env.PACHCA_WEBHOOK_NOVOSTROYKI
+      : process.env.PACHCA_WEBHOOK_AGENCY;
+  const url = raw?.trim();
+  return url ? url : null;
 }
 
-/** Отправить текстовое сообщение в бота. Возвращает true при успехе. Провал не роняет вызывающий роут. */
-export async function tgSend(text: string): Promise<boolean> {
-  const c = creds();
-  if (!c) {
-    console.error("tgSend: TG_BOT_TOKEN / TG_CHAT_ID не настроены");
+/**
+ * Отправить текст заявки во входящий webhook Пачки нужного канала.
+ * Возвращает true при успехе. Провал не роняет вызывающий роут.
+ */
+export async function pachcaSend(
+  channel: LeadChannel,
+  text: string,
+): Promise<boolean> {
+  const url = webhookUrl(channel);
+  if (!url) {
+    console.error(`pachcaSend: PACHCA webhook для «${channel}» не настроен`);
     return false;
   }
   try {
-    const res = await fetch(`${TG_API}/bot${c.token}/sendMessage`, {
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: c.chatId, text }),
+      body: JSON.stringify({ message: text }),
     });
     if (!res.ok) {
-      console.error("tgSend: telegram failed", res.status, await res.text());
+      console.error("pachcaSend: pachca failed", res.status, await res.text());
       return false;
     }
     return true;
   } catch (e) {
-    console.error("tgSend: telegram error", e);
-    return false;
-  }
-}
-
-/** Отправить файл (запись звонка) документом в бота. Провал не роняет вызывающий роут. */
-export async function tgSendDocument(
-  filename: string,
-  content: Buffer,
-  caption?: string,
-): Promise<boolean> {
-  const c = creds();
-  if (!c) return false;
-  try {
-    const fd = new FormData();
-    fd.set("chat_id", c.chatId);
-    if (caption) fd.set("caption", caption.slice(0, 1024));
-    fd.set("document", new Blob([new Uint8Array(content)]), filename);
-    const res = await fetch(`${TG_API}/bot${c.token}/sendDocument`, {
-      method: "POST",
-      body: fd,
-    });
-    if (!res.ok) {
-      console.error(
-        "tgSendDocument: telegram failed",
-        res.status,
-        await res.text(),
-      );
-      return false;
-    }
-    return true;
-  } catch (e) {
-    console.error("tgSendDocument: telegram error", e);
+    console.error("pachcaSend: pachca error", e);
     return false;
   }
 }

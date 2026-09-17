@@ -1,4 +1,4 @@
-import { tgSend, tgSendDocument } from "@/lib/notify";
+import { pachcaSend } from "@/lib/notify";
 import { rateLimit } from "@/lib/ratelimit";
 
 const topics: Record<string, string> = {
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
     timeZone: "Asia/Yekaterinburg",
   });
 
-  // ── заявка уходит в Telegram-бота (SMTP на Timeweb заблокирован) ──
+  // ── заявка уходит в чат агентства в Пачке (Telegram заблокирован из ДЦ Timeweb) ──
   // Имя не собираем; телефон без ФИО персональных данных не образует.
   const text = [
     "🌈 Новая заявка — сайт ЛУЧ-ИИ",
@@ -97,27 +97,22 @@ export async function POST(req: Request) {
     org ? `Компания/ЖК: ${org}` : null,
     email ? `Email: ${email}` : null,
     task ? `\nЗадача / ссылка на звонки:\n${task}` : null,
-    files.length ? `\nЗаписей приложено: ${files.length}` : null,
+    files.length
+      ? `\nПриложено записей: ${files.length} — файлы не пересылаются в Пачку, запросите у клиента`
+      : null,
     `\nПолучено: ${receivedAt}`,
   ]
     .filter(Boolean)
     .join("\n");
 
-  const sent = await tgSend(text);
+  const sent = await pachcaSend("agency", text);
   if (!sent) {
     return Response.json({ error: "notify failed" }, { status: 500 });
   }
 
-  // записи звонков — отдельными документами в тот же чат (не блокируем ответ)
-  await Promise.all(
-    files.map(async (f) =>
-      tgSendDocument(
-        f.name.slice(0, 120) || "запись",
-        Buffer.from(await f.arrayBuffer()),
-        `Запись к заявке · ${topicLabel}`,
-      ),
-    ),
-  ).catch(() => {});
+  // Записи звонков (files) через входящий webhook Пачки не отправить — он только
+  // текстовый. В тексте лида есть счётчик приложенных записей; сами файлы пока
+  // не пересылаются (см. lib/notify.ts). При необходимости — REST API Пачки.
 
   return Response.json({ ok: true });
 }
