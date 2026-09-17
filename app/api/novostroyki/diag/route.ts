@@ -50,9 +50,20 @@ export async function GET(req: Request) {
   out.tcp_ipv4 = v4ip ? await tcpProbe(v4ip, 443, 4) : "no A record";
   out.tcp_ipv6 = v6ip ? await tcpProbe(v6ip, 443, 6) : "no AAAA record";
 
-  // контрольный коннект к заведомо доступному IPv4-хосту (DeepSeek работает)
-  const ds = await dnsp.resolve4("api.deepseek.com").catch(() => null);
-  out.tcp_deepseek_ipv4 = ds && ds[0] ? await tcpProbe(ds[0], 443, 4) : "no A";
+  // достижимость кандидатов-релеев с Timeweb (IPv4:443): куда можно проксировать
+  const candidates = [
+    "api.deepseek.com", // контроль (работает)
+    "luchii.vercel.app", // Vercel — уже есть у нас
+    "cloudflare.com", // Cloudflare Workers
+    "api.resend.com", // HTTP-email API
+    "api.github.com", // GitHub (issue/repo dispatch как транспорт)
+  ];
+  const reach: Record<string, string> = {};
+  for (const h of candidates) {
+    const ips = await dnsp.resolve4(h).catch(() => null);
+    reach[h] = ips && ips[0] ? await tcpProbe(ips[0], 443, 4) : "no A";
+  }
+  out.relay_candidates = reach;
 
   return Response.json(out);
 }
