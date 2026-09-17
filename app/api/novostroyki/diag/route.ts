@@ -53,10 +53,12 @@ export async function GET(req: Request) {
   // достижимость кандидатов-релеев с Timeweb (IPv4:443): куда можно проксировать
   const candidates = [
     "api.deepseek.com", // контроль (работает)
-    "luchii.vercel.app", // Vercel — уже есть у нас
-    "cloudflare.com", // Cloudflare Workers
-    "api.resend.com", // HTTP-email API
-    "api.github.com", // GitHub (issue/repo dispatch как транспорт)
+    "cloudflare.com", // Cloudflare Workers (релей)
+    // мессенджеры с РФ-инфраструктурой (прямой канал без релея):
+    "api.vk.com", // VK — сообщения/бот в сообщество
+    "botapi.max.ru", // MAX — нац. мессенджер, Bot API
+    "chatapi.viber.com", // Viber Bot API (инфра не РФ — проверяем)
+    "graph.facebook.com", // WhatsApp/Meta (риск — только для сверки)
   ];
   const reach: Record<string, string> = {};
   for (const h of candidates) {
