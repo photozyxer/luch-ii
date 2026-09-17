@@ -13,7 +13,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   // + домены планировок застройщиков (новостройки-консультант): PRINZIP (SVG),
   //   Атлас (s3.timeweb.cloud), ТЭН, Брусника (cdn.brusnika.ru)
-  "img-src 'self' data: blob: https://mc.yandex.ru https://prinzip.su https://s3.timeweb.cloud https://ten-stroy.ru https://cdn.brusnika.ru",
+  "img-src 'self' data: blob: https://mc.yandex.ru https://prinzip.su https://s3.timeweb.cloud https://ten-stroy.ru https://cdn.brusnika.ru https://api.atomstroy.net",
   "font-src 'self'",
   "connect-src 'self' https://mc.yandex.ru",
   "frame-src 'self' https://mc.yandex.ru",
